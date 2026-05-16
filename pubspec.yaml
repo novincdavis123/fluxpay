@@ -46,11 +46,6 @@ dependencies:
   # Dependency Injection
   get_it: ^7.6.7
 
-  # Storage
-  isar: ^3.1.0+1
-  isar_flutter_libs: ^3.1.0+1
-  path_provider: ^2.1.2
-
   # Security
   flutter_secure_storage: ^9.0.0
   local_auth: ^2.1.8
@@ -60,6 +55,7 @@ dependencies:
   decimal: ^2.3.3
   collection: ^1.18.0
   connectivity_plus: ^5.0.2
+  uuid: ^4.5.3
 
   # UI
   flutter_animate: ^4.5.0

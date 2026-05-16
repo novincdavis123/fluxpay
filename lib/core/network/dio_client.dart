@@ -7,6 +7,7 @@ class DioClient {
   DioClient() {
     dio = Dio(
       BaseOptions(
+        baseUrl: 'https://api.frankfurter.app',
         connectTimeout: Duration(seconds: 30),
         receiveTimeout: Duration(seconds: 30),
       ),
