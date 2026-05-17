@@ -1,4 +1,9 @@
+import 'package:fluxpay/features/analytics/domain/services/analytics_service.dart';
 import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc/exchange_bloc.dart';
+import 'package:fluxpay/features/transactions/data/datasource/transaction_local_datasource.dart';
+import 'package:fluxpay/features/transactions/data/repositories/transaction_repository_impl.dart';
+import 'package:fluxpay/features/transactions/domain/repositories/transaction_repository.dart';
+import 'package:fluxpay/features/transactions/presentation/bloc/transaction_bloc.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:fluxpay/core/network/dio_client.dart';
@@ -28,10 +33,12 @@ Future<void> initDependencies() async {
   /// CORE
   sl.registerLazySingleton<DioClient>(() => DioClient());
 
+  /// EXCHANGE CALCULATOR SERVICE
   sl.registerLazySingleton<ExchangeCalculatorService>(
     () => ExchangeCalculatorService(),
   );
 
+  /// LIVE RATE SIMULATION SERVICE
   sl.registerLazySingleton<LiveRateSimulationService>(
     () => LiveRateSimulationService(),
   );
@@ -67,4 +74,20 @@ Future<void> initDependencies() async {
 
   /// BENEFICIARY BLOC
   sl.registerFactory(() => BeneficiaryBloc(repository: sl()));
+
+  /// TRANSACTION DATASOURCE
+  sl.registerLazySingleton<TransactionLocalDataSource>(
+    () => TransactionLocalDataSourceImpl(),
+  );
+
+  /// TRANSACTION REPOSITORY
+  sl.registerLazySingleton<TransactionRepository>(
+    () => TransactionRepositoryImpl(localDataSource: sl()),
+  );
+
+  /// TRANSACTION BLOC
+  sl.registerFactory(() => TransactionBloc(repository: sl()));
+
+  /// ANALYTICS SERVICE
+  sl.registerLazySingleton<AnalyticsService>(() => AnalyticsService());
 }

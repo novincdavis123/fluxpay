@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:decimal/decimal.dart';
 
 class LiveRateSimulationService {
@@ -9,7 +8,7 @@ class LiveRateSimulationService {
   Timer? _timer;
 
   Stream<Decimal> get stream => _controller.stream;
-
+  // Simulate live rate updates by randomly fluctuating the base rate every 3 seconds
   void start({required Decimal baseRate}) {
     _timer?.cancel();
 

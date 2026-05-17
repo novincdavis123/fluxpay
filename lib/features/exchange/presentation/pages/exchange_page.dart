@@ -1,17 +1,19 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:fluxpay/app/theme/app_colors.dart';
 import 'package:fluxpay/app/theme/app_spacing.dart';
 import 'package:fluxpay/app/theme/app_text_styles.dart';
-
 import 'package:fluxpay/core/constants/currency_data.dart';
-
+import 'package:fluxpay/features/beneficiaries/presentation/bloc/beneficiary_bloc.dart';
 import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc/exchange_bloc.dart';
 import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc/exchange_event.dart';
 import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc/exchange_state.dart';
-
 import 'package:fluxpay/features/exchange/presentation/widgets/currency_selector_bottom_sheet.dart';
 import 'package:fluxpay/features/exchange/presentation/widgets/live_rate_indicator.dart';
+import 'package:fluxpay/features/transactions/data/models/transaction_model.dart';
+import 'package:fluxpay/features/transactions/domain/entities/transaction_status.dart';
+import 'package:fluxpay/features/transactions/presentation/bloc/transaction_bloc.dart';
 
 class ExchangePage extends StatefulWidget {
   const ExchangePage({super.key});
@@ -23,6 +25,10 @@ class ExchangePage extends StatefulWidget {
 class _ExchangePageState extends State<ExchangePage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _swapAnimationController;
+
+  final TextEditingController _sendController = TextEditingController();
+
+  final TextEditingController _receiveController = TextEditingController();
 
   @override
   void initState() {
@@ -42,6 +48,10 @@ class _ExchangePageState extends State<ExchangePage>
   void dispose() {
     _swapAnimationController.dispose();
 
+    _sendController.dispose();
+
+    _receiveController.dispose();
+
     super.dispose();
   }
 
@@ -57,13 +67,20 @@ class _ExchangePageState extends State<ExchangePage>
           (currency) => currency.code == state.toCurrency,
         );
 
+        _sendController.text = state.senderAmount.toString();
+
+        _receiveController.text = state.recipientAmount.toString();
+
         return Scaffold(
-          backgroundColor: const Color(0xFF0D1117),
+          backgroundColor: AppColors.backgroundblack,
+
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(AppSpacing.lg),
+
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+
                 children: [
                   const SizedBox(height: AppSpacing.md),
 
@@ -80,18 +97,25 @@ class _ExchangePageState extends State<ExchangePage>
 
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.lg),
+
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(28),
-                      color: const Color(0xFF161B22),
+
+                      color: AppColors.card,
                     ),
+
                     child: Column(
                       children: [
                         /// SEND
                         _AmountCard(
                           title: 'You Send',
+
                           currencyFlag: fromCurrency.flag,
+
                           currencyCode: fromCurrency.code,
-                          amount: state.senderAmount.toString(),
+
+                          controller: _sendController,
+
                           onCurrencyTap: () {
                             _showCurrencySelector(
                               context,
@@ -99,6 +123,7 @@ class _ExchangePageState extends State<ExchangePage>
                               currentState: state,
                             );
                           },
+
                           onAmountChanged: (value) {
                             context.read<ExchangeBloc>().add(
                               AmountChanged(value),
@@ -108,7 +133,7 @@ class _ExchangePageState extends State<ExchangePage>
 
                         const SizedBox(height: AppSpacing.lg),
 
-                        /// SWAP BUTTON
+                        /// SWAP
                         GestureDetector(
                           onTap: () async {
                             await _swapAnimationController.forward();
@@ -123,22 +148,29 @@ class _ExchangePageState extends State<ExchangePage>
                               const SwapCurrencies(),
                             );
                           },
+
                           child: RotationTransition(
                             turns: Tween<double>(begin: 0, end: 0.5).animate(
                               CurvedAnimation(
                                 parent: _swapAnimationController,
+
                                 curve: Curves.easeInOut,
                               ),
                             ),
+
                             child: Container(
                               width: 56,
                               height: 56,
+
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.white.withOpacity(0.08),
+
+                                color: AppColors.white10,
                               ),
+
                               child: const Icon(
                                 Icons.swap_vert,
+
                                 color: Colors.white,
                               ),
                             ),
@@ -150,9 +182,13 @@ class _ExchangePageState extends State<ExchangePage>
                         /// RECEIVE
                         _AmountCard(
                           title: 'Recipient Gets',
+
                           currencyFlag: toCurrency.flag,
+
                           currencyCode: toCurrency.code,
-                          amount: state.recipientAmount.toString(),
+
+                          controller: _receiveController,
+
                           onCurrencyTap: () {
                             _showCurrencySelector(
                               context,
@@ -160,6 +196,7 @@ class _ExchangePageState extends State<ExchangePage>
                               currentState: state,
                             );
                           },
+
                           onAmountChanged: (value) {
                             context.read<ExchangeBloc>().add(
                               RecipientAmountChanged(value),
@@ -169,18 +206,23 @@ class _ExchangePageState extends State<ExchangePage>
 
                         const SizedBox(height: AppSpacing.xl),
 
-                        /// RATE CARD
+                        /// INFO CARD
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
+
                           padding: const EdgeInsets.all(AppSpacing.md),
+
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
-                            color: Colors.white.withOpacity(0.05),
+
+                            color: AppColors.white10,
                           ),
+
                           child: Column(
                             children: [
                               _InfoRow(
                                 title: 'Exchange Rate',
+
                                 value:
                                     '1 ${state.fromCurrency} = ${state.exchangeRate} ${state.toCurrency}',
                               ),
@@ -189,14 +231,16 @@ class _ExchangePageState extends State<ExchangePage>
 
                               _InfoRow(
                                 title: 'Transfer Fee',
-                                value: state.fee.toString(),
+
+                                value: state.fee.toStringAsFixed(2),
                               ),
 
                               const SizedBox(height: AppSpacing.md),
 
                               _InfoRow(
                                 title: 'Total Payable',
-                                value: state.totalPayable.toString(),
+
+                                value: state.totalPayable.toStringAsFixed(2),
                               ),
                             ],
                           ),
@@ -207,26 +251,103 @@ class _ExchangePageState extends State<ExchangePage>
                         /// LIVE STATUS
                         LiveRateIndicator(
                           isStale: state.isStale,
+
                           lastUpdated: state.lastUpdated,
                         ),
 
-                        const SizedBox(height: AppSpacing.sm),
+                        const SizedBox(height: AppSpacing.lg),
 
-                        if (state.lastUpdated != null)
-                          Align(
-                            alignment: Alignment.centerLeft,
+                        /// SEND BUTTON
+                        SizedBox(
+                          width: double.infinity,
+
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+
+                              padding: const EdgeInsets.symmetric(vertical: 18),
+
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            ),
+
+                            onPressed: () {
+                              final beneficiaryState = context
+                                  .read<BeneficiaryBloc>()
+                                  .state;
+
+                              if (beneficiaryState.beneficiaries.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Please add a beneficiary first',
+                                    ),
+                                  ),
+                                );
+
+                                return;
+                              }
+
+                              final beneficiary =
+                                  beneficiaryState.beneficiaries.first;
+
+                              final transaction = TransactionModel(
+                                id: 'TXN${Random().nextInt(999999)}',
+
+                                senderCurrency: state.fromCurrency,
+
+                                receiverCurrency: state.toCurrency,
+
+                                senderAmount: state.senderAmount.toDouble(),
+
+                                receiverAmount: state.recipientAmount
+                                    .toDouble(),
+
+                                exchangeRate: state.exchangeRate.toDouble(),
+
+                                fee: state.fee.toDouble(),
+
+                                totalPayable: state.totalPayable.toDouble(),
+
+                                beneficiaryName: beneficiary.nickname,
+
+                                beneficiaryBank: beneficiary.bankName,
+
+                                createdAt: DateTime.now(),
+
+                                status: TransactionStatus.completed,
+
+                                maskedAccountNumber: 'XXXXXX1298',
+                              );
+
+                              context.read<TransactionBloc>().add(
+                                AddTransaction(transaction),
+                              );
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Transfer successful'),
+                                ),
+                              );
+                            },
+
                             child: Text(
-                              'Updated: ${state.lastUpdated}',
-                              style: AppTextStyles.bodySmall,
+                              'Send Money',
+
+                              style: AppTextStyles.buttonText,
                             ),
                           ),
+                        ),
 
                         if (state.errorMessage != null)
                           Padding(
                             padding: const EdgeInsets.only(top: AppSpacing.md),
+
                             child: Text(
                               state.errorMessage!,
-                              style: const TextStyle(color: Colors.red),
+
+                              style: AppTextStyles.error,
                             ),
                           ),
                       ],
@@ -248,8 +369,11 @@ class _ExchangePageState extends State<ExchangePage>
   }) {
     showModalBottomSheet(
       context: context,
+
       isScrollControlled: true,
+
       backgroundColor: Colors.transparent,
+
       builder: (_) {
         return CurrencySelectorBottomSheet(
           onCurrencySelected: (currency) {
@@ -258,6 +382,7 @@ class _ExchangePageState extends State<ExchangePage>
                 fromCurrency: isFromCurrency
                     ? currency.code
                     : currentState.fromCurrency,
+
                 toCurrency: isFromCurrency
                     ? currentState.toCurrency
                     : currency.code,
@@ -277,7 +402,7 @@ class _AmountCard extends StatelessWidget {
 
   final String currencyCode;
 
-  final String amount;
+  final TextEditingController controller;
 
   final VoidCallback onCurrencyTap;
 
@@ -287,7 +412,7 @@ class _AmountCard extends StatelessWidget {
     required this.title,
     required this.currencyFlag,
     required this.currencyCode,
-    required this.amount,
+    required this.controller,
     required this.onCurrencyTap,
     required this.onAmountChanged,
   });
@@ -296,12 +421,16 @@ class _AmountCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
+
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        color: Colors.white.withOpacity(0.05),
+
+        color: AppColors.white10,
       ),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+
         children: [
           Text(title, style: AppTextStyles.bodyMedium),
 
@@ -311,15 +440,19 @@ class _AmountCard extends StatelessWidget {
             children: [
               GestureDetector(
                 onTap: onCurrencyTap,
+
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
                     vertical: 10,
                   ),
+
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
-                    color: Colors.white.withOpacity(0.08),
+
+                    color: AppColors.white10,
                   ),
+
                   child: Row(
                     children: [
                       Text(currencyFlag, style: const TextStyle(fontSize: 20)),
@@ -340,17 +473,23 @@ class _AmountCard extends StatelessWidget {
 
               Expanded(
                 child: TextField(
+                  controller: controller,
+
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
+
                   onChanged: onAmountChanged,
+
+                  style: AppTextStyles.bodyLarge,
+
                   decoration: InputDecoration(
                     hintText: '0.00',
+
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(18),
                     ),
                   ),
-                  controller: TextEditingController(text: amount),
                 ),
               ),
             ],
@@ -372,8 +511,10 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
       children: [
         Text(title, style: AppTextStyles.bodyMedium),
+
         Text(value, style: AppTextStyles.bodyMedium),
       ],
     );

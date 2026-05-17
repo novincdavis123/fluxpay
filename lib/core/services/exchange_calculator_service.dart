@@ -1,5 +1,4 @@
 import 'package:decimal/decimal.dart';
-
 import '../models/exchange_calculation_result.dart';
 
 class ExchangeCalculatorService {
@@ -34,7 +33,7 @@ class ExchangeCalculatorService {
     required bool sameCurrency,
   }) {
     Decimal fee;
-
+    // Fee structure:
     if (sameCurrency) {
       fee = Decimal.parse('1');
     } else if (amount < Decimal.parse('100')) {
