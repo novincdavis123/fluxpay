@@ -7,6 +7,8 @@ class TransactionState {
 
   final bool isLoading;
 
+  final bool isPaginating;
+
   final bool hasReachedMax;
 
   final String searchQuery;
@@ -23,6 +25,8 @@ class TransactionState {
     this.filteredTransactions = const [],
 
     this.isLoading = false,
+
+    this.isPaginating = false,
 
     this.hasReachedMax = false,
 
@@ -42,6 +46,8 @@ class TransactionState {
 
     bool? isLoading,
 
+    bool? isPaginating,
+
     bool? hasReachedMax,
 
     String? searchQuery,
@@ -58,6 +64,8 @@ class TransactionState {
       filteredTransactions: filteredTransactions ?? this.filteredTransactions,
 
       isLoading: isLoading ?? this.isLoading,
+
+      isPaginating: isPaginating ?? this.isPaginating,
 
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
 

@@ -36,24 +36,34 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     LoadTransactions event,
     Emitter<TransactionState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, errorMessage: null));
 
     try {
       final transactions = await repository.getTransactions();
 
-      final updatedState = state.copyWith(
-        transactions: transactions,
+      final initialItems = transactions.take(pageSize).toList();
 
-        filteredTransactions: transactions,
+      emit(
+        state.copyWith(
+          isLoading: false,
 
-        isLoading: false,
+          transactions: transactions,
 
-        hasReachedMax: transactions.length <= pageSize,
+          filteredTransactions: initialItems,
+
+          hasReachedMax: transactions.length <= pageSize,
+
+          isPaginating: false,
+        ),
       );
-
-      emit(updatedState);
     } catch (e) {
-      emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          isPaginating: false,
+          errorMessage: 'Failed to load transactions',
+        ),
+      );
     }
   }
 
@@ -61,13 +71,20 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     AddTransaction event,
     Emitter<TransactionState> emit,
   ) async {
-    final updatedTransactions = [event.transaction, ...state.transactions];
+    try {
+      final updatedTransactions = [event.transaction, ...state.transactions];
 
-    await repository.saveTransactions(updatedTransactions);
+      await repository.saveTransactions(updatedTransactions);
 
-    final updatedState = state.copyWith(transactions: updatedTransactions);
+      final updatedState = state.copyWith(
+        transactions: updatedTransactions,
+        errorMessage: null,
+      );
 
-    _applyFilters(emit, updatedState);
+      _applyFilters(emit, updatedState);
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'Failed to save transaction'));
+    }
   }
 
   void _onSearchTransactions(
@@ -117,6 +134,12 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         }).toList();
         break;
 
+      case TransactionFilter.processing:
+        filtered = filtered.where((tx) {
+          return tx.status == TransactionStatus.processing;
+        }).toList();
+        break;
+
       case TransactionFilter.failed:
         filtered = filtered.where((tx) {
           return tx.status == TransactionStatus.failed;
@@ -148,26 +171,75 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       }).toList();
     }
 
+    final paginatedItems = filtered.take(pageSize).toList();
+
     emit(
       currentState.copyWith(
-        filteredTransactions: filtered,
+        filteredTransactions: paginatedItems,
 
         hasReachedMax: filtered.length <= pageSize,
+
+        isPaginating: false,
       ),
     );
   }
 
-  void _onLoadMoreTransactions(
+  Future<void> _onLoadMoreTransactions(
     LoadMoreTransactions event,
     Emitter<TransactionState> emit,
-  ) {
-    if (state.hasReachedMax) {
+  ) async {
+    if (state.hasReachedMax || state.isPaginating) {
       return;
     }
 
+    emit(state.copyWith(isPaginating: true));
+
+    await Future.delayed(const Duration(milliseconds: 500));
+
     final currentLength = state.filteredTransactions.length;
 
-    final nextItems = state.transactions.skip(currentLength).take(pageSize);
+    List<TransactionModel> filtered = List.from(state.transactions);
+
+    /// APPLY ACTIVE FILTERS
+    switch (state.filter) {
+      case TransactionFilter.completed:
+        filtered = filtered.where((tx) {
+          return tx.status == TransactionStatus.completed;
+        }).toList();
+        break;
+
+      case TransactionFilter.pending:
+        filtered = filtered.where((tx) {
+          return tx.status == TransactionStatus.pending;
+        }).toList();
+        break;
+
+      case TransactionFilter.processing:
+        filtered = filtered.where((tx) {
+          return tx.status == TransactionStatus.processing;
+        }).toList();
+        break;
+
+      case TransactionFilter.failed:
+        filtered = filtered.where((tx) {
+          return tx.status == TransactionStatus.failed;
+        }).toList();
+        break;
+
+      case TransactionFilter.all:
+        break;
+    }
+
+    if (state.searchQuery.isNotEmpty) {
+      filtered = filtered.where((tx) {
+        final query = state.searchQuery.toLowerCase();
+
+        return tx.beneficiaryName.toLowerCase().contains(query) ||
+            tx.id.toLowerCase().contains(query);
+      }).toList();
+    }
+
+    final nextItems = filtered.skip(currentLength).take(pageSize).toList();
 
     final updatedList = [...state.filteredTransactions, ...nextItems];
 
@@ -175,7 +247,9 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       state.copyWith(
         filteredTransactions: updatedList,
 
-        hasReachedMax: updatedList.length >= state.transactions.length,
+        hasReachedMax: updatedList.length >= filtered.length,
+
+        isPaginating: false,
       ),
     );
   }

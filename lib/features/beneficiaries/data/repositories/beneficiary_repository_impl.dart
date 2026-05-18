@@ -10,6 +10,15 @@ class BeneficiaryRepositoryImpl implements BeneficiaryRepository {
   BeneficiaryRepositoryImpl({required this.localDataSource});
 
   @override
+  Future<List<BeneficiaryEntity>> getBeneficiaries() async {
+    final beneficiaries = await localDataSource.getBeneficiaries();
+
+    beneficiaries.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    return beneficiaries;
+  }
+
+  @override
   Future<void> addBeneficiary(BeneficiaryEntity beneficiary) async {
     final model = BeneficiaryModel(
       id: beneficiary.id,
@@ -26,7 +35,24 @@ class BeneficiaryRepositoryImpl implements BeneficiaryRepository {
   }
 
   @override
-  Future<List<BeneficiaryEntity>> getBeneficiaries() async {
-    return localDataSource.getBeneficiaries();
+  Future<void> deleteBeneficiary(String beneficiaryId) async {
+    await localDataSource.deleteBeneficiary(beneficiaryId);
+  }
+
+  @override
+  Future<List<BeneficiaryEntity>> searchBeneficiaries(String query) async {
+    final beneficiaries = await localDataSource.searchBeneficiaries(query);
+
+    return beneficiaries;
+  }
+
+  @override
+  Future<List<BeneficiaryEntity>> filterByCurrency(String currencyCode) async {
+    final beneficiaries = await localDataSource.getBeneficiaries();
+
+    return beneficiaries.where((beneficiary) {
+      return beneficiary.currencyCode.toLowerCase() ==
+          currencyCode.toLowerCase();
+    }).toList();
   }
 }

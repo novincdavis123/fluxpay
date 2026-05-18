@@ -23,16 +23,16 @@ class TransactionTile extends StatelessWidget {
         return AppColors.success;
 
       case TransactionStatus.pending:
-        return Colors.orange;
+        return AppColors.warning;
 
       case TransactionStatus.processing:
-        return Colors.blue;
+        return AppColors.info;
 
       case TransactionStatus.failed:
         return AppColors.error;
 
       case TransactionStatus.refunded:
-        return Colors.purple;
+        return AppColors.refunded;
     }
   }
 
@@ -57,118 +57,160 @@ class TransactionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => TransactionDetailsPage(transaction: transaction),
+    final statusColor = _statusColor();
+
+    return Material(
+      color: Colors.transparent,
+
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => TransactionDetailsPage(transaction: transaction),
+            ),
+          );
+        },
+
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 14),
+
+          padding: const EdgeInsets.all(18),
+
+          decoration: BoxDecoration(
+            color: AppColors.getCardColor(context),
+
+            borderRadius: BorderRadius.circular(24),
+
+            border: Border.all(color: AppColors.getBorderColor(context)),
+
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(
+                  AppColors.isDark(context) ? 0.18 : 0.04,
+                ),
+
+                blurRadius: 18,
+
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-        );
-      },
 
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 14),
+          child: Row(
+            children: [
+              /// STATUS ICON
+              Container(
+                width: 58,
+                height: 58,
 
-        padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
 
-        decoration: BoxDecoration(
-          color: AppColors.card,
+                  color: statusColor.withOpacity(0.15),
+                ),
 
-          borderRadius: BorderRadius.circular(24),
-        ),
-
-        child: Row(
-          children: [
-            /// STATUS ICON
-            Container(
-              width: 58,
-              height: 58,
-
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-
-                color: _statusColor().withOpacity(0.15),
+                child: Icon(_statusIcon(), color: statusColor, size: 28),
               ),
 
-              child: Icon(_statusIcon(), color: _statusColor(), size: 28),
-            ),
+              const SizedBox(width: AppSpacing.md),
 
-            const SizedBox(width: AppSpacing.md),
+              /// DETAILS
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
 
-            /// DETAILS
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      transaction.beneficiaryName,
+
+                      maxLines: 1,
+
+                      overflow: TextOverflow.ellipsis,
+
+                      style: AppTextStyles.headingSmall.copyWith(
+                        color: AppColors.getTextPrimary(context),
+                      ),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    Text(
+                      '${transaction.senderCurrency} → '
+                      '${transaction.receiverCurrency}',
+
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.getTextSecondary(context),
+                      ),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    Text(
+                      DateFormat(
+                        'dd MMM • hh:mm a',
+                      ).format(transaction.createdAt),
+
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.getTextMuted(context),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(width: AppSpacing.sm),
+
+              /// AMOUNT + STATUS
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
 
                 children: [
                   Text(
-                    transaction.beneficiaryName,
+                    '${transaction.senderCurrency} '
+                    '${transaction.senderAmount.toStringAsFixed(2)}',
 
-                    style: AppTextStyles.headingSmall,
+                    style: AppTextStyles.headingSmall.copyWith(
+                      color: AppColors.getTextPrimary(context),
+                    ),
                   ),
 
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
 
-                  Text(
-                    '${transaction.senderCurrency} → ${transaction.receiverCurrency}',
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
 
-                    style: AppTextStyles.bodySmall,
-                  ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(100),
 
-                  const SizedBox(height: 4),
+                      color: statusColor.withOpacity(0.15),
 
-                  Text(
-                    DateFormat(
-                      'dd MMM • hh:mm a',
-                    ).format(transaction.createdAt),
+                      border: Border.all(color: statusColor.withOpacity(0.25)),
+                    ),
 
-                    style: AppTextStyles.bodySmall,
+                    child: Text(
+                      transaction.status.name.toUpperCase(),
+
+                      style: TextStyle(
+                        color: statusColor,
+
+                        fontSize: 11,
+
+                        fontWeight: FontWeight.w700,
+
+                        letterSpacing: 0.4,
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-
-            /// AMOUNT + STATUS
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-
-              children: [
-                Text(
-                  '${transaction.senderCurrency} ${transaction.senderAmount.toStringAsFixed(2)}',
-
-                  style: AppTextStyles.headingSmall,
-                ),
-
-                const SizedBox(height: 8),
-
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(100),
-
-                    color: _statusColor().withOpacity(0.15),
-                  ),
-
-                  child: Text(
-                    transaction.status.name.toUpperCase(),
-
-                    style: TextStyle(
-                      color: _statusColor(),
-
-                      fontSize: 11,
-
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

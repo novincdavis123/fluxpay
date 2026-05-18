@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import 'package:fluxpay/app/theme/app_colors.dart';
 import 'package:fluxpay/app/theme/app_spacing.dart';
 import 'package:fluxpay/app/theme/app_text_styles.dart';
+
 import 'package:fluxpay/features/transactions/data/models/transaction_model.dart';
 import 'package:fluxpay/features/transactions/domain/entities/transaction_status.dart';
 
@@ -13,15 +15,25 @@ class TransactionDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundblack,
+      backgroundColor: AppColors.getBackground(context),
 
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
 
-        title: Text('Transaction Details', style: AppTextStyles.headingSmall),
+        iconTheme: IconThemeData(color: AppColors.getTextPrimary(context)),
+
+        title: Text(
+          'Transaction Details',
+          style: AppTextStyles.headingSmall.copyWith(
+            color: AppColors.getTextPrimary(context),
+          ),
+        ),
       ),
 
       body: SingleChildScrollView(
@@ -29,6 +41,7 @@ class TransactionDetailsPage extends StatelessWidget {
 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+
           children: [
             /// STATUS CARD
             Container(
@@ -37,29 +50,44 @@ class TransactionDetailsPage extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.xl),
 
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
-                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(30),
+
+                color: AppColors.getCardColor(context),
+
+                border: Border.all(color: AppColors.getBorderColor(context)),
+
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(isDark ? 0.25 : 0.04),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
 
               child: Column(
                 children: [
                   Container(
-                    width: 78,
-                    height: 78,
+                    width: 84,
+                    height: 84,
 
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: _statusColor().withOpacity(0.15),
                     ),
 
-                    child: Icon(_statusIcon(), color: _statusColor(), size: 38),
+                    child: Icon(_statusIcon(), color: _statusColor(), size: 40),
                   ),
 
                   const SizedBox(height: AppSpacing.lg),
 
                   Text(
                     transaction.status.name.toUpperCase(),
-                    style: AppTextStyles.headingMedium,
+
+                    style: AppTextStyles.headingMedium.copyWith(
+                      color: _statusColor(),
+                      letterSpacing: 1.1,
+                    ),
                   ),
 
                   const SizedBox(height: AppSpacing.sm),
@@ -69,26 +97,49 @@ class TransactionDetailsPage extends StatelessWidget {
                       'dd MMM yyyy • hh:mm a',
                     ).format(transaction.createdAt),
 
-                    style: AppTextStyles.bodyMedium,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.getTextSecondary(context),
+                    ),
                   ),
 
                   const SizedBox(height: AppSpacing.xl),
 
                   Text(
-                    '${transaction.senderAmount.toStringAsFixed(2)} ${transaction.senderCurrency}',
-                    style: AppTextStyles.displayLarge,
+                    '${transaction.senderAmount.toStringAsFixed(2)} '
+                    '${transaction.senderCurrency}',
+
+                    style: AppTextStyles.displayLarge.copyWith(
+                      color: AppColors.getTextPrimary(context),
+                    ),
+
                     textAlign: TextAlign.center,
                   ),
 
                   const SizedBox(height: AppSpacing.sm),
 
-                  Text(
-                    'Recipient gets '
-                    '${transaction.receiverAmount.toStringAsFixed(2)} '
-                    '${transaction.receiverCurrency}',
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
 
-                    style: AppTextStyles.bodyMedium,
-                    textAlign: TextAlign.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(100),
+                      color: AppColors.primary.withOpacity(0.08),
+                    ),
+
+                    child: Text(
+                      'Recipient gets '
+                      '${transaction.receiverAmount.toStringAsFixed(2)} '
+                      '${transaction.receiverCurrency}',
+
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ],
               ),
@@ -98,19 +149,31 @@ class TransactionDetailsPage extends StatelessWidget {
 
             /// BENEFICIARY
             _SectionCard(
+              context: context,
               title: 'Beneficiary',
+
               child: Column(
                 children: [
-                  _InfoRow(label: 'Name', value: transaction.beneficiaryName),
-
-                  _InfoRow(label: 'Bank', value: transaction.beneficiaryBank),
+                  _InfoRow(
+                    context: context,
+                    label: 'Name',
+                    value: transaction.beneficiaryName,
+                  ),
 
                   _InfoRow(
+                    context: context,
+                    label: 'Bank',
+                    value: transaction.beneficiaryBank,
+                  ),
+
+                  _InfoRow(
+                    context: context,
                     label: 'Account',
                     value: transaction.maskedAccountNumber,
                   ),
 
                   _InfoRow(
+                    context: context,
                     label: 'Transfer ID',
                     value: transaction.id,
                     isLast: true,
@@ -123,11 +186,16 @@ class TransactionDetailsPage extends StatelessWidget {
 
             /// EXCHANGE DETAILS
             _SectionCard(
+              context: context,
               title: 'Exchange Details',
+
               child: Column(
                 children: [
                   _InfoRow(
+                    context: context,
+
                     label: 'Exchange Rate',
+
                     value:
                         '1 ${transaction.senderCurrency} = '
                         '${transaction.exchangeRate.toStringAsFixed(2)} '
@@ -135,17 +203,24 @@ class TransactionDetailsPage extends StatelessWidget {
                   ),
 
                   _InfoRow(
+                    context: context,
+
                     label: 'Transfer Fee',
+
                     value:
                         '${transaction.fee.toStringAsFixed(2)} '
                         '${transaction.senderCurrency}',
                   ),
 
                   _InfoRow(
+                    context: context,
+
                     label: 'Total Paid',
+
                     value:
                         '${(transaction.senderAmount + transaction.fee).toStringAsFixed(2)} '
                         '${transaction.senderCurrency}',
+
                     isLast: true,
                   ),
                 ],
@@ -156,7 +231,9 @@ class TransactionDetailsPage extends StatelessWidget {
 
             /// TIMELINE
             _SectionCard(
+              context: context,
               title: 'Transfer Timeline',
+
               child: Column(
                 children: [
                   const _TimelineTile(
@@ -168,6 +245,7 @@ class TransactionDetailsPage extends StatelessWidget {
 
                   _TimelineTile(
                     title: 'Payment Processed',
+
                     subtitle: transaction.status == TransactionStatus.failed
                         ? 'Payment processing failed'
                         : 'Funds received successfully',
@@ -179,6 +257,7 @@ class TransactionDetailsPage extends StatelessWidget {
 
                   _TimelineTile(
                     title: 'Recipient Delivery',
+
                     subtitle: transaction.status == TransactionStatus.completed
                         ? 'Money delivered successfully'
                         : transaction.status == TransactionStatus.processing
@@ -197,6 +276,8 @@ class TransactionDetailsPage extends StatelessWidget {
                 ],
               ),
             ),
+
+            const SizedBox(height: AppSpacing.xxl),
           ],
         ),
       ),
@@ -209,16 +290,16 @@ class TransactionDetailsPage extends StatelessWidget {
         return AppColors.success;
 
       case TransactionStatus.pending:
-        return Colors.orange;
+        return AppColors.warning;
 
       case TransactionStatus.processing:
-        return Colors.blue;
+        return AppColors.info;
 
       case TransactionStatus.failed:
         return AppColors.error;
 
       case TransactionStatus.refunded:
-        return Colors.purple;
+        return AppColors.refunded;
     }
   }
 
@@ -243,29 +324,52 @@ class TransactionDetailsPage extends StatelessWidget {
 }
 
 class _SectionCard extends StatelessWidget {
+  final BuildContext context;
   final String title;
-
   final Widget child;
 
-  const _SectionCard({required this.title, required this.child});
+  const _SectionCard({
+    required this.context,
+    required this.title,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       width: double.infinity,
 
       padding: const EdgeInsets.all(AppSpacing.lg),
 
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(26),
+
+        color: AppColors.getCardColor(context),
+
+        border: Border.all(color: AppColors.getBorderColor(context)),
+
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.20 : 0.03),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
 
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
 
         children: [
-          Text(title, style: AppTextStyles.headingSmall),
+          Text(
+            title,
+
+            style: AppTextStyles.headingSmall.copyWith(
+              color: AppColors.getTextPrimary(context),
+            ),
+          ),
 
           const SizedBox(height: AppSpacing.lg),
 
@@ -277,13 +381,13 @@ class _SectionCard extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
+  final BuildContext context;
   final String label;
-
   final String value;
-
   final bool isLast;
 
   const _InfoRow({
+    required this.context,
     required this.label,
     required this.value,
     this.isLast = false,
@@ -299,7 +403,15 @@ class _InfoRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
         children: [
-          Expanded(child: Text(label, style: AppTextStyles.bodyMedium)),
+          Expanded(
+            child: Text(
+              label,
+
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.getTextSecondary(context),
+              ),
+            ),
+          ),
 
           const SizedBox(width: AppSpacing.md),
 
@@ -307,7 +419,10 @@ class _InfoRow extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: AppTextStyles.headingSmall,
+
+              style: AppTextStyles.headingSmall.copyWith(
+                color: AppColors.getTextPrimary(context),
+              ),
             ),
           ),
         ],
@@ -318,11 +433,8 @@ class _InfoRow extends StatelessWidget {
 
 class _TimelineTile extends StatelessWidget {
   final String title;
-
   final String subtitle;
-
   final bool completed;
-
   final bool isLast;
 
   const _TimelineTile({
@@ -349,7 +461,10 @@ class _TimelineTile extends StatelessWidget {
 
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: completed ? AppColors.success : Colors.white24,
+
+                  color: completed
+                      ? AppColors.success
+                      : AppColors.getTextMuted(context),
                 ),
               ),
 
@@ -357,7 +472,10 @@ class _TimelineTile extends StatelessWidget {
                 Container(
                   width: 2,
                   height: 52,
-                  color: completed ? AppColors.success : Colors.white12,
+
+                  color: completed
+                      ? AppColors.success
+                      : AppColors.getBorderColor(context),
                 ),
             ],
           ),
@@ -369,11 +487,23 @@ class _TimelineTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
 
               children: [
-                Text(title, style: AppTextStyles.headingSmall),
+                Text(
+                  title,
+
+                  style: AppTextStyles.headingSmall.copyWith(
+                    color: AppColors.getTextPrimary(context),
+                  ),
+                ),
 
                 const SizedBox(height: 4),
 
-                Text(subtitle, style: AppTextStyles.bodySmall),
+                Text(
+                  subtitle,
+
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.getTextSecondary(context),
+                  ),
+                ),
               ],
             ),
           ),

@@ -8,9 +8,13 @@ abstract class ExchangeEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Fetch initial exchange rate
+/// ======================================================
+/// FETCH EXCHANGE RATE
+/// ======================================================
+
 class FetchExchangeRate extends ExchangeEvent {
   final String fromCurrency;
+
   final String toCurrency;
 
   const FetchExchangeRate({
@@ -22,7 +26,10 @@ class FetchExchangeRate extends ExchangeEvent {
   List<Object?> get props => [fromCurrency, toCurrency];
 }
 
-/// Sender amount changed
+/// ======================================================
+/// AMOUNT CHANGED
+/// ======================================================
+
 class AmountChanged extends ExchangeEvent {
   final String amount;
 
@@ -32,7 +39,24 @@ class AmountChanged extends ExchangeEvent {
   List<Object?> get props => [amount];
 }
 
-/// Recipient amount changed (reverse calculation)
+/// ======================================================
+/// UPDATE SENDER AMOUNT
+/// (UI-friendly event wrapper)
+/// ======================================================
+
+class UpdateSenderAmount extends ExchangeEvent {
+  final double amount;
+
+  const UpdateSenderAmount(this.amount);
+
+  @override
+  List<Object?> get props => [amount];
+}
+
+/// ======================================================
+/// RECIPIENT AMOUNT CHANGED
+/// ======================================================
+
 class RecipientAmountChanged extends ExchangeEvent {
   final String amount;
 
@@ -42,14 +66,34 @@ class RecipientAmountChanged extends ExchangeEvent {
   List<Object?> get props => [amount];
 }
 
-/// Swap sender and receiver currencies
+/// ======================================================
+/// UPDATE RECEIVER AMOUNT
+/// ======================================================
+
+class UpdateReceiverAmount extends ExchangeEvent {
+  final double amount;
+
+  const UpdateReceiverAmount(this.amount);
+
+  @override
+  List<Object?> get props => [amount];
+}
+
+/// ======================================================
+/// SWAP CURRENCIES
+/// ======================================================
+
 class SwapCurrencies extends ExchangeEvent {
   const SwapCurrencies();
 }
 
-/// Currency selection changed
+/// ======================================================
+/// CHANGE BOTH CURRENCIES
+/// ======================================================
+
 class CurrencyChanged extends ExchangeEvent {
   final String fromCurrency;
+
   final String toCurrency;
 
   const CurrencyChanged({required this.fromCurrency, required this.toCurrency});
@@ -58,22 +102,73 @@ class CurrencyChanged extends ExchangeEvent {
   List<Object?> get props => [fromCurrency, toCurrency];
 }
 
-/// Refresh exchange rates periodically
+/// ======================================================
+/// CHANGE FROM CURRENCY
+/// ======================================================
+
+class ChangeFromCurrency extends ExchangeEvent {
+  final String currencyCode;
+
+  const ChangeFromCurrency(this.currencyCode);
+
+  @override
+  List<Object?> get props => [currencyCode];
+}
+
+/// ======================================================
+/// CHANGE TO CURRENCY
+/// ======================================================
+
+class ChangeToCurrency extends ExchangeEvent {
+  final String currencyCode;
+
+  const ChangeToCurrency(this.currencyCode);
+
+  @override
+  List<Object?> get props => [currencyCode];
+}
+
+/// ======================================================
+/// REFRESH RATES
+/// ======================================================
+
 class RefreshExchangeRates extends ExchangeEvent {
   const RefreshExchangeRates();
 }
 
-/// Mark rates as stale after expiry
+/// ======================================================
+/// REFRESH EXCHANGE RATE
+/// ======================================================
+
+class RefreshExchangeRate extends ExchangeEvent {
+  const RefreshExchangeRate();
+}
+
+/// ======================================================
+/// MARK RATES STALE
+/// ======================================================
+
 class MarkRatesAsStale extends ExchangeEvent {
   const MarkRatesAsStale();
 }
 
-/// Update live rate from simulation
+/// ======================================================
+/// LIVE RATE UPDATE
+/// ======================================================
+
 class LiveRateUpdated extends ExchangeEvent {
   final Decimal updatedRate;
 
   const LiveRateUpdated(this.updatedRate);
 
   @override
-  List<Object> get props => [updatedRate];
+  List<Object?> get props => [updatedRate];
+}
+
+/// ======================================================
+/// CLEAR ERROR
+/// ======================================================
+
+class ClearExchangeError extends ExchangeEvent {
+  const ClearExchangeError();
 }

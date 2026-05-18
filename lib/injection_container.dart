@@ -1,22 +1,30 @@
-import 'package:fluxpay/features/analytics/domain/services/analytics_service.dart';
-import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc/exchange_bloc.dart';
-import 'package:fluxpay/features/transactions/data/datasource/transaction_local_datasource.dart';
-import 'package:fluxpay/features/transactions/data/repositories/transaction_repository_impl.dart';
-import 'package:fluxpay/features/transactions/domain/repositories/transaction_repository.dart';
-import 'package:fluxpay/features/transactions/presentation/bloc/transaction_bloc.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:fluxpay/features/exchange/data/datasource/exchange_localdatasource.dart';
+import 'package:fluxpay/features/settings/data/datasource/settings_local_datasource.dart';
+import 'package:fluxpay/features/settings/data/repositories/settings_repository_impl.dart';
+import 'package:fluxpay/features/settings/domain/repositories/settings_repository.dart';
+import 'package:fluxpay/features/settings/presentation/bloc/settings_bloc.dart';
+
 import 'package:get_it/get_it.dart';
 
-import 'package:fluxpay/core/network/dio_client.dart';
+import 'package:fluxpay/core/connectivity/connectivity_cubit.dart';
 
+import 'package:fluxpay/core/network/dio_client.dart';
+import 'package:fluxpay/core/network/token_storage.dart';
+
+import 'package:fluxpay/core/services/connectivity_service.dart';
 import 'package:fluxpay/core/services/exchange_calculator_service.dart';
 import 'package:fluxpay/core/services/live_rate_simulation_service.dart';
 
 /// EXCHANGE
 import 'package:fluxpay/features/exchange/data/datasource/exchange_remote_datasource.dart';
-
 import 'package:fluxpay/features/exchange/data/repositories/exchange_repository_impl.dart';
 
 import 'package:fluxpay/features/exchange/domain/repositories/exchange_repository.dart';
+
+import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc/exchange_bloc.dart';
 
 /// BENEFICIARIES
 import 'package:fluxpay/features/beneficiaries/data/datasource/beneficiary_local_datasource.dart';
@@ -27,67 +35,151 @@ import 'package:fluxpay/features/beneficiaries/domain/repositories/beneficiary_r
 
 import 'package:fluxpay/features/beneficiaries/presentation/bloc/beneficiary_bloc.dart';
 
+/// TRANSACTIONS
+import 'package:fluxpay/features/transactions/data/datasource/transaction_local_datasource.dart';
+
+import 'package:fluxpay/features/transactions/data/repositories/transaction_repository_impl.dart';
+
+import 'package:fluxpay/features/transactions/domain/repositories/transaction_repository.dart';
+
+import 'package:fluxpay/features/transactions/presentation/bloc/transaction_bloc.dart';
+
+/// ANALYTICS
+import 'package:fluxpay/features/analytics/domain/services/analytics_service.dart';
+
 final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
-  /// CORE
-  sl.registerLazySingleton<DioClient>(() => DioClient());
+  /// =====================================================
+  /// SECURE STORAGE
+  /// =====================================================
+  sl.registerLazySingleton<FlutterSecureStorage>(
+    () => const FlutterSecureStorage(),
+  );
 
-  /// EXCHANGE CALCULATOR SERVICE
+  /// =====================================================
+  /// TOKEN STORAGE
+  /// =====================================================
+  sl.registerLazySingleton<TokenStorage>(
+    () => TokenStorage(secureStorage: sl<FlutterSecureStorage>()),
+  );
+
+  /// =====================================================
+  /// CORE NETWORK
+  /// =====================================================
+  sl.registerLazySingleton<DioClient>(
+    () => DioClient(tokenStorage: sl<TokenStorage>()),
+  );
+
+  /// =====================================================
+  /// CONNECTIVITY
+  /// =====================================================
+  sl.registerLazySingleton<Connectivity>(() => Connectivity());
+
+  sl.registerLazySingleton<ConnectivityService>(
+    () => ConnectivityService(connectivity: sl<Connectivity>()),
+  );
+
+  sl.registerLazySingleton<ConnectivityCubit>(
+    () => ConnectivityCubit(service: sl<ConnectivityService>()),
+  );
+
+  /// =====================================================
+  /// SERVICES
+  /// =====================================================
   sl.registerLazySingleton<ExchangeCalculatorService>(
     () => ExchangeCalculatorService(),
   );
 
-  /// LIVE RATE SIMULATION SERVICE
   sl.registerLazySingleton<LiveRateSimulationService>(
     () => LiveRateSimulationService(),
   );
 
-  /// EXCHANGE DATASOURCE
+  sl.registerLazySingleton<AnalyticsService>(() => AnalyticsService());
+
+  /// =====================================================
+  /// EXCHANGE FEATURE
+  /// =====================================================
+
+  /// DATASOURCE
   sl.registerLazySingleton<ExchangeRemoteDataSource>(
-    () => ExchangeRemoteDataSourceImpl(dioClient: sl()),
+    () => ExchangeRemoteDataSourceImpl(dioClient: sl<DioClient>()),
   );
 
-  /// EXCHANGE REPOSITORY
+  /// REPOSITORY
   sl.registerLazySingleton<ExchangeRepository>(
-    () => ExchangeRepositoryImpl(remoteDataSource: sl()),
-  );
-
-  /// EXCHANGE BLOC
-  sl.registerFactory(
-    () => ExchangeBloc(
-      repository: sl(),
-      calculatorService: sl(),
-      liveRateSimulationService: sl(),
+    () => ExchangeRepositoryImpl(
+      localDataSource: sl<ExchangeLocalDataSource>(),
+      remoteDataSource: sl<ExchangeRemoteDataSource>(),
     ),
   );
 
-  /// BENEFICIARY DATASOURCE
+  /// BLOC
+  sl.registerFactory<ExchangeBloc>(
+    () => ExchangeBloc(
+      repository: sl<ExchangeRepository>(),
+      calculatorService: sl<ExchangeCalculatorService>(),
+      liveRateSimulationService: sl<LiveRateSimulationService>(),
+    ),
+  );
+
+  /// =====================================================
+  /// BENEFICIARY FEATURE
+  /// =====================================================
+
+  /// DATASOURCE
   sl.registerLazySingleton<BeneficiaryLocalDataSource>(
     () => BeneficiaryLocalDataSourceImpl(),
   );
 
-  /// BENEFICIARY REPOSITORY
+  /// REPOSITORY
   sl.registerLazySingleton<BeneficiaryRepository>(
-    () => BeneficiaryRepositoryImpl(localDataSource: sl()),
+    () => BeneficiaryRepositoryImpl(
+      localDataSource: sl<BeneficiaryLocalDataSource>(),
+    ),
   );
 
-  /// BENEFICIARY BLOC
-  sl.registerFactory(() => BeneficiaryBloc(repository: sl()));
+  /// BLOC
+  sl.registerFactory<BeneficiaryBloc>(
+    () => BeneficiaryBloc(repository: sl<BeneficiaryRepository>()),
+  );
 
-  /// TRANSACTION DATASOURCE
+  /// =====================================================
+  /// TRANSACTION FEATURE
+  /// =====================================================
+
+  /// DATASOURCE
   sl.registerLazySingleton<TransactionLocalDataSource>(
     () => TransactionLocalDataSourceImpl(),
   );
 
-  /// TRANSACTION REPOSITORY
+  /// REPOSITORY
   sl.registerLazySingleton<TransactionRepository>(
-    () => TransactionRepositoryImpl(localDataSource: sl()),
+    () => TransactionRepositoryImpl(
+      localDataSource: sl<TransactionLocalDataSource>(),
+    ),
   );
 
-  /// TRANSACTION BLOC
-  sl.registerFactory(() => TransactionBloc(repository: sl()));
+  /// BLOC
+  sl.registerFactory<TransactionBloc>(
+    () => TransactionBloc(repository: sl<TransactionRepository>()),
+  );
 
-  /// ANALYTICS SERVICE
-  sl.registerLazySingleton<AnalyticsService>(() => AnalyticsService());
+  /// DATASOURCES
+  sl.registerLazySingleton<ExchangeLocalDataSource>(
+    () => ExchangeLocalDataSourceImpl(),
+  );
+
+  /// DATASOURCE
+  sl.registerLazySingleton<SettingsLocalDataSource>(
+    () => SettingsLocalDataSourceImpl(),
+  );
+
+  /// REPOSITORY
+  sl.registerLazySingleton<SettingsRepository>(
+    () => SettingsRepositoryImpl(localDataSource: sl()),
+  );
+
+  /// BLOC
+  sl.registerFactory(() => SettingsBloc(repository: sl()));
 }

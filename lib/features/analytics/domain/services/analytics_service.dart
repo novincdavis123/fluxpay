@@ -1,9 +1,10 @@
 import 'package:fluxpay/features/analytics/domain/entities/analytics_summary.dart';
+
 import 'package:fluxpay/features/transactions/data/models/transaction_model.dart';
+
 import 'package:fluxpay/features/transactions/domain/entities/transaction_status.dart';
 
 class AnalyticsService {
-  // Generate analytics summary from a list of transactions
   AnalyticsSummary generateSummary(List<TransactionModel> transactions) {
     double totalTransferred = 0;
 
@@ -12,6 +13,12 @@ class AnalyticsService {
     int completed = 0;
 
     int failed = 0;
+
+    int pending = 0;
+
+    int processing = 0;
+
+    int refunded = 0;
 
     final Map<String, double> currencyMap = {};
 
@@ -22,41 +29,80 @@ class AnalyticsService {
 
       totalFees += tx.fee;
 
-      if (tx.status == TransactionStatus.completed) {
-        completed++;
+      /// STATUS COUNTS
+      switch (tx.status) {
+        case TransactionStatus.completed:
+          completed++;
+          break;
+
+        case TransactionStatus.failed:
+          failed++;
+          break;
+
+        case TransactionStatus.pending:
+          pending++;
+          break;
+
+        case TransactionStatus.processing:
+          processing++;
+          break;
+
+        case TransactionStatus.refunded:
+          refunded++;
+          break;
       }
 
-      if (tx.status == TransactionStatus.failed) {
-        failed++;
-      }
-      // Update currency distribution
+      /// CURRENCY DISTRIBUTION
       currencyMap.update(
         tx.senderCurrency,
         (value) => value + tx.senderAmount,
         ifAbsent: () => tx.senderAmount,
       );
 
-      final monthIndex = DateTime.now().month - tx.createdAt.month;
+      /// LAST 6 MONTHS VOLUME
+      final now = DateTime.now();
 
-      if (monthIndex >= 0 && monthIndex < 6) {
-        monthlyVolume[5 - monthIndex] += tx.senderAmount;
+      final monthDifference =
+          (now.year - tx.createdAt.year) * 12 +
+          (now.month - tx.createdAt.month);
+
+      if (monthDifference >= 0 && monthDifference < 6) {
+        monthlyVolume[5 - monthDifference] += tx.senderAmount;
       }
     }
 
-    final double successRate = transactions.isEmpty
-        ? 0.0
-        : ((completed / transactions.length) * 100).toDouble();
-    // Convert currency distribution to percentages
+    final totalTransactions = transactions.length;
+
+    final double successRate = totalTransactions == 0
+        ? 0
+        : (completed / totalTransactions) * 100;
+
+    final double averageTransferAmount = totalTransactions == 0
+        ? 0
+        : totalTransferred / totalTransactions;
+
     return AnalyticsSummary(
       totalTransferred: totalTransferred,
 
       totalFees: totalFees,
 
+      totalTransactions: totalTransactions,
+
       completedTransactions: completed,
 
       failedTransactions: failed,
 
+      pendingTransactions: pending,
+
+      processingTransactions: processing,
+
+      refundedTransactions: refunded,
+
       successRate: successRate,
+
+      averageTransferAmount: averageTransferAmount,
+
+      supportedCurrencies: currencyMap.keys.length,
 
       currencyDistribution: currencyMap,
 

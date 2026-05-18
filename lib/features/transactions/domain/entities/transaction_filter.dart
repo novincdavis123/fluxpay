@@ -1,1 +1,1 @@
-enum TransactionFilter { all, completed, pending, failed }
+enum TransactionFilter { all, completed, pending, processing, failed }
