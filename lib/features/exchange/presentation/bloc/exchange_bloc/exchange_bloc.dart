@@ -117,27 +117,37 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
         to: event.toCurrency,
       );
 
-      final calculation = calculatorService.calculate(
-        amount: state.senderAmount,
+      final calculation = calculatorService.calculateFromSender(
+        senderAmount: state.senderAmount,
         rate: rateEntity.rate,
         isWeekend: _isWeekend(),
         sameCurrency: event.fromCurrency == event.toCurrency,
       );
 
-      /// START LIVE SIMULATION
+      /// ======================================================
+      /// START LIVE RATE SIMULATION
+      /// ======================================================
+
       liveRateSimulationService.start(baseRate: calculation.exchangeRate);
 
       emit(
         state.copyWith(
           isLoading: false,
           isStale: false,
+
           fromCurrency: event.fromCurrency,
           toCurrency: event.toCurrency,
+
           exchangeRate: calculation.exchangeRate,
+
+          senderAmount: calculation.senderPays,
           recipientAmount: calculation.recipientGets,
+
           fee: calculation.fee,
           totalPayable: calculation.totalPayable,
+
           lastUpdated: DateTime.now(),
+
           errorMessage: null,
         ),
       );
@@ -147,10 +157,15 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
         debugPrint('✅ EXCHANGE RATE UPDATED');
         debugPrint('${event.fromCurrency} → ${event.toCurrency}');
         debugPrint('Rate: ${calculation.exchangeRate}');
+        debugPrint('Sender: ${calculation.senderPays}');
+        debugPrint('Recipient: ${calculation.recipientGets}');
+        debugPrint('Fee: ${calculation.fee}');
         debugPrint('');
       }
     }
-    /// FAILURES
+    /// ======================================================
+    /// FAILURE
+    /// ======================================================
     on Failure catch (failure) {
       if (kDebugMode) {
         debugPrint('');
@@ -169,7 +184,9 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
         ),
       );
     }
+    /// ======================================================
     /// UNKNOWN ERROR
+    /// ======================================================
     catch (e, stackTrace) {
       if (kDebugMode) {
         debugPrint('');
@@ -199,10 +216,10 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
     UpdateSenderAmount event,
     Emitter<ExchangeState> emit,
   ) {
-    final amount = Decimal.parse(event.amount.toString());
+    final amount = Decimal.tryParse(event.amount.toString()) ?? Decimal.zero;
 
-    final calculation = calculatorService.calculate(
-      amount: amount,
+    final calculation = calculatorService.calculateFromSender(
+      senderAmount: amount,
       rate: state.exchangeRate,
       isWeekend: _isWeekend(),
       sameCurrency: state.fromCurrency == state.toCurrency,
@@ -210,7 +227,7 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
 
     emit(
       state.copyWith(
-        senderAmount: amount,
+        senderAmount: calculation.senderPays,
         recipientAmount: calculation.recipientGets,
         fee: calculation.fee,
         totalPayable: calculation.totalPayable,
@@ -226,16 +243,15 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
     UpdateReceiverAmount event,
     Emitter<ExchangeState> emit,
   ) {
-    final recipientAmount = Decimal.parse(event.amount.toString());
+    final recipientAmount =
+        Decimal.tryParse(event.amount.toString()) ?? Decimal.zero;
 
-    if (state.exchangeRate == Decimal.zero) {
+    if (state.exchangeRate <= Decimal.zero) {
       return;
     }
 
-    final senderAmount = (recipientAmount / state.exchangeRate).toDecimal();
-
-    final calculation = calculatorService.calculate(
-      amount: senderAmount,
+    final calculation = calculatorService.calculateFromRecipient(
+      recipientAmount: recipientAmount,
       rate: state.exchangeRate,
       isWeekend: _isWeekend(),
       sameCurrency: state.fromCurrency == state.toCurrency,
@@ -243,8 +259,8 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
 
     emit(
       state.copyWith(
-        senderAmount: senderAmount,
-        recipientAmount: recipientAmount,
+        senderAmount: calculation.senderPays,
+        recipientAmount: calculation.recipientGets,
         fee: calculation.fee,
         totalPayable: calculation.totalPayable,
       ),
@@ -258,8 +274,8 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
   void _onAmountChanged(AmountChanged event, Emitter<ExchangeState> emit) {
     final amount = Decimal.tryParse(event.amount.trim()) ?? Decimal.zero;
 
-    final calculation = calculatorService.calculate(
-      amount: amount,
+    final calculation = calculatorService.calculateFromSender(
+      senderAmount: amount,
       rate: state.exchangeRate,
       isWeekend: _isWeekend(),
       sameCurrency: state.fromCurrency == state.toCurrency,
@@ -267,7 +283,7 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
 
     emit(
       state.copyWith(
-        senderAmount: amount,
+        senderAmount: calculation.senderPays,
         recipientAmount: calculation.recipientGets,
         fee: calculation.fee,
         totalPayable: calculation.totalPayable,
@@ -286,14 +302,12 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
     final recipientAmount =
         Decimal.tryParse(event.amount.trim()) ?? Decimal.zero;
 
-    if (state.exchangeRate == Decimal.zero) {
+    if (state.exchangeRate <= Decimal.zero) {
       return;
     }
 
-    final senderAmount = (recipientAmount / state.exchangeRate).toDecimal();
-
-    final calculation = calculatorService.calculate(
-      amount: senderAmount,
+    final calculation = calculatorService.calculateFromRecipient(
+      recipientAmount: recipientAmount,
       rate: state.exchangeRate,
       isWeekend: _isWeekend(),
       sameCurrency: state.fromCurrency == state.toCurrency,
@@ -301,7 +315,7 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
 
     emit(
       state.copyWith(
-        senderAmount: senderAmount,
+        senderAmount: calculation.senderPays,
         recipientAmount: calculation.recipientGets,
         fee: calculation.fee,
         totalPayable: calculation.totalPayable,
@@ -317,11 +331,27 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
     SwapCurrencies event,
     Emitter<ExchangeState> emit,
   ) async {
+    final oldSenderAmount = state.senderAmount;
+
+    final oldRecipientAmount = state.recipientAmount;
+
     final fromCurrency = state.toCurrency;
 
     final toCurrency = state.fromCurrency;
 
-    emit(state.copyWith(fromCurrency: fromCurrency, toCurrency: toCurrency));
+    /// ======================================================
+    /// SWAP AMOUNTS TOO
+    /// ======================================================
+
+    emit(
+      state.copyWith(
+        fromCurrency: fromCurrency,
+        toCurrency: toCurrency,
+
+        senderAmount: oldRecipientAmount,
+        recipientAmount: oldSenderAmount,
+      ),
+    );
 
     add(FetchExchangeRate(fromCurrency: fromCurrency, toCurrency: toCurrency));
   }
@@ -422,8 +452,8 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
   /// ======================================================
 
   void _onLiveRateUpdated(LiveRateUpdated event, Emitter<ExchangeState> emit) {
-    final calculation = calculatorService.calculate(
-      amount: state.senderAmount,
+    final calculation = calculatorService.calculateFromSender(
+      senderAmount: state.senderAmount,
       rate: event.updatedRate,
       isWeekend: _isWeekend(),
       sameCurrency: state.fromCurrency == state.toCurrency,
@@ -452,7 +482,7 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
   }
 
   /// ======================================================
-  /// AUTO REFRESH TIMER
+  /// AUTO REFRESH
   /// ======================================================
 
   void _startAutoRefresh() {

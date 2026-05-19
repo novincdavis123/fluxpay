@@ -1,3 +1,4 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,6 +10,7 @@ import 'package:fluxpay/core/connectivity/connectivity_cubit.dart';
 import 'package:fluxpay/core/connectivity/connectivity_state.dart';
 import 'package:fluxpay/core/constants/currency_data.dart';
 import 'package:fluxpay/core/utils/app_snackbar.dart';
+import 'package:fluxpay/core/utils/money_formatter.dart';
 import 'package:fluxpay/core/widgets/offline_empty_state.dart';
 
 import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc/exchange_bloc.dart';
@@ -57,18 +59,18 @@ class _ExchangePageState extends State<ExchangePage>
     super.dispose();
   }
 
+  /// =====================================================
+  /// SAFE CONTROLLER UPDATE
+  /// =====================================================
+
   void _updateControllers(ExchangeState state) {
-    if (_isUpdatingControllers) {
-      return;
-    }
+    if (_isUpdatingControllers) return;
 
-    _isUpdatingControllers = true;
-
-    final senderText = state.senderAmount == 0
+    final senderText = state.senderAmount == Decimal.zero
         ? ''
-        : state.senderAmount.toString();
+        : state.senderAmount.toStringAsFixed(2);
 
-    final receiverText = state.recipientAmount == 0
+    final receiverText = state.recipientAmount == Decimal.zero
         ? ''
         : state.recipientAmount.toStringAsFixed(2);
 
@@ -85,8 +87,18 @@ class _ExchangePageState extends State<ExchangePage>
         selection: TextSelection.collapsed(offset: receiverText.length),
       );
     }
+  }
 
-    _isUpdatingControllers = false;
+  /// =====================================================
+  /// PARSE DECIMAL SAFELY
+  /// =====================================================
+
+  Decimal _parseDecimal(String value) {
+    if (value.trim().isEmpty) {
+      return Decimal.zero;
+    }
+
+    return Decimal.tryParse(value.trim()) ?? Decimal.zero;
   }
 
   @override
@@ -127,27 +139,16 @@ class _ExchangePageState extends State<ExchangePage>
             builder: (context, state) {
               _updateControllers(state);
 
-              final fromCurrency = currencies.firstWhere(
-                (currency) => currency.code == state.fromCurrency,
-              );
-
-              final toCurrency = currencies.firstWhere(
-                (currency) => currency.code == state.toCurrency,
-              );
-
               return Scaffold(
                 backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
                 appBar: AppBar(
                   elevation: 0,
-
                   centerTitle: false,
-
                   backgroundColor: Colors.transparent,
 
                   title: Text(
                     'Exchange',
-
                     style: AppTextStyles.headingMedium.copyWith(
                       color: AppColors.getTextPrimary(context),
                     ),
@@ -162,10 +163,11 @@ class _ExchangePageState extends State<ExchangePage>
                       crossAxisAlignment: CrossAxisAlignment.start,
 
                       children: [
+                        /// =====================================================
                         /// HEADER
+                        /// =====================================================
                         Text(
                           'Global Exchange',
-
                           style: AppTextStyles.headingLarge.copyWith(
                             color: AppColors.getTextPrimary(context),
                           ),
@@ -175,7 +177,6 @@ class _ExchangePageState extends State<ExchangePage>
 
                         Text(
                           'Fast and transparent international transfers',
-
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.getTextSecondary(context),
                           ),
@@ -183,7 +184,9 @@ class _ExchangePageState extends State<ExchangePage>
 
                         const SizedBox(height: AppSpacing.xl),
 
+                        /// =====================================================
                         /// MAIN CARD
+                        /// =====================================================
                         Container(
                           width: double.infinity,
 
@@ -213,37 +216,46 @@ class _ExchangePageState extends State<ExchangePage>
 
                           child: Column(
                             children: [
+                              /// =====================================================
                               /// SEND
+                              /// =====================================================
                               _CurrencyInputCard(
                                 title: 'You Send',
 
-                                currencyFlag: fromCurrency.flag,
-
-                                currencyCode: fromCurrency.code,
+                                selectedCurrency: state.fromCurrency,
 
                                 controller: _sendController,
 
                                 readOnly: false,
 
-                                onChanged: (value) {
+                                onCurrencyChanged: (currency) {
                                   context.read<ExchangeBloc>().add(
-                                    UpdateSenderAmount(
-                                      double.tryParse(value) ?? 0,
-                                    ),
+                                    ChangeFromCurrency(currency),
+                                  );
+                                },
+
+                                onChanged: (value) {
+                                  if (_isUpdatingControllers) {
+                                    return;
+                                  }
+
+                                  context.read<ExchangeBloc>().add(
+                                    UpdateSenderAmount(_parseDecimal(value)),
                                   );
                                 },
                               ),
 
                               const SizedBox(height: AppSpacing.lg),
 
-                              /// SWAP BUTTON
+                              /// =====================================================
+                              /// SWAP
+                              /// =====================================================
                               Center(
                                 child: RotationTransition(
                                   turns: Tween<double>(begin: 0, end: 0.5)
                                       .animate(
                                         CurvedAnimation(
                                           parent: _swapAnimationController,
-
                                           curve: Curves.easeInOut,
                                         ),
                                       ),
@@ -259,7 +271,6 @@ class _ExchangePageState extends State<ExchangePage>
 
                                     child: Container(
                                       width: 58,
-
                                       height: 58,
 
                                       decoration: BoxDecoration(
@@ -281,9 +292,7 @@ class _ExchangePageState extends State<ExchangePage>
 
                                       child: const Icon(
                                         Icons.swap_vert_rounded,
-
                                         color: Colors.white,
-
                                         size: 28,
                                       ),
                                     ),
@@ -293,22 +302,40 @@ class _ExchangePageState extends State<ExchangePage>
 
                               const SizedBox(height: AppSpacing.lg),
 
+                              /// =====================================================
                               /// RECEIVE
+                              /// =====================================================
                               _CurrencyInputCard(
                                 title: 'Recipient Gets',
 
-                                currencyFlag: toCurrency.flag,
-
-                                currencyCode: toCurrency.code,
+                                selectedCurrency: state.toCurrency,
 
                                 controller: _receiveController,
 
-                                readOnly: true,
+                                readOnly: false,
+
+                                onCurrencyChanged: (currency) {
+                                  context.read<ExchangeBloc>().add(
+                                    ChangeToCurrency(currency),
+                                  );
+                                },
+
+                                onChanged: (value) {
+                                  if (_isUpdatingControllers) {
+                                    return;
+                                  }
+
+                                  context.read<ExchangeBloc>().add(
+                                    UpdateReceiverAmount(_parseDecimal(value)),
+                                  );
+                                },
                               ),
 
                               const SizedBox(height: AppSpacing.xl),
 
+                              /// =====================================================
                               /// RATE INFO
+                              /// =====================================================
                               Container(
                                 width: double.infinity,
 
@@ -328,7 +355,7 @@ class _ExchangePageState extends State<ExchangePage>
                                       label: 'Exchange Rate',
 
                                       value:
-                                          '1 ${state.fromCurrency} = ${state.exchangeRate.toStringAsFixed(2)} ${state.toCurrency}',
+                                          '1 ${state.fromCurrency} = ${formatCurrency(amount: state.exchangeRate, currencyCode: state.toCurrency)}',
                                     ),
 
                                     const SizedBox(height: AppSpacing.md),
@@ -336,8 +363,10 @@ class _ExchangePageState extends State<ExchangePage>
                                     _RateRow(
                                       label: 'Fee',
 
-                                      value:
-                                          '\$${state.fee.toStringAsFixed(2)}',
+                                      value: formatCurrency(
+                                        amount: state.fee,
+                                        currencyCode: state.fromCurrency,
+                                      ),
                                     ),
 
                                     const SizedBox(height: AppSpacing.md),
@@ -345,28 +374,48 @@ class _ExchangePageState extends State<ExchangePage>
                                     _RateRow(
                                       label: 'Total Payable',
 
-                                      value:
-                                          '\$${state.totalPayable.toStringAsFixed(2)}',
+                                      value: formatCurrency(
+                                        amount: state.totalPayable,
+                                        currencyCode: state.fromCurrency,
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
 
-                              /// LOADER
+                              /// =====================================================
+                              /// RATE STATUS
+                              /// =====================================================
+                              if (state.isStale)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16),
+
+                                  child: Text(
+                                    'Refreshing rates...',
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: Colors.orange,
+                                    ),
+                                  ),
+                                ),
+
+                              /// =====================================================
+                              /// LOADING
+                              /// =====================================================
                               if (state.isLoading)
                                 const Padding(
                                   padding: EdgeInsets.only(top: 20),
-
                                   child: CircularProgressIndicator(),
                                 ),
 
+                              /// =====================================================
                               /// UPDATED
+                              /// =====================================================
                               if (state.lastUpdated != null)
                                 Padding(
                                   padding: const EdgeInsets.only(top: 18),
 
                                   child: Text(
-                                    'Updated: ${state.lastUpdated}',
+                                    'Updated just now',
 
                                     style: AppTextStyles.bodySmall.copyWith(
                                       color: AppColors.getTextSecondary(
@@ -394,9 +443,7 @@ class _ExchangePageState extends State<ExchangePage>
 class _CurrencyInputCard extends StatelessWidget {
   final String title;
 
-  final String currencyFlag;
-
-  final String currencyCode;
+  final String selectedCurrency;
 
   final TextEditingController controller;
 
@@ -404,18 +451,24 @@ class _CurrencyInputCard extends StatelessWidget {
 
   final Function(String)? onChanged;
 
+  final Function(String)? onCurrencyChanged;
+
   const _CurrencyInputCard({
     required this.title,
-    required this.currencyFlag,
-    required this.currencyCode,
+    required this.selectedCurrency,
     required this.controller,
     required this.readOnly,
     this.onChanged,
+    this.onCurrencyChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final currency = currencies.firstWhere(
+      (currency) => currency.code == selectedCurrency,
+    );
 
     return Container(
       width: double.infinity,
@@ -444,10 +497,6 @@ class _CurrencyInputCard extends StatelessWidget {
 
           Row(
             children: [
-              Text(currencyFlag, style: const TextStyle(fontSize: 32)),
-
-              const SizedBox(width: 14),
-
               Expanded(
                 child: TextField(
                   controller: controller,
@@ -476,14 +525,56 @@ class _CurrencyInputCard extends StatelessWidget {
                 ),
               ),
 
-              Text(
-                currencyCode,
+              const SizedBox(width: 12),
 
-                style: AppTextStyles.headingSmall.copyWith(
-                  color: AppColors.getTextPrimary(context),
+              DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: selectedCurrency,
+
+                  dropdownColor: AppColors.getCardColor(context),
+
+                  borderRadius: BorderRadius.circular(16),
+
+                  onChanged: (value) {
+                    if (value != null && onCurrencyChanged != null) {
+                      onCurrencyChanged!(value);
+                    }
+                  },
+
+                  items: currencies.map((currency) {
+                    return DropdownMenuItem(
+                      value: currency.code,
+
+                      child: Row(
+                        children: [
+                          Text(
+                            currency.flag,
+                            style: const TextStyle(fontSize: 22),
+                          ),
+
+                          const SizedBox(width: 8),
+
+                          Text(currency.code, style: AppTextStyles.bodyLarge),
+                        ],
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
             ],
+          ),
+
+          const SizedBox(height: 8),
+
+          Align(
+            alignment: Alignment.centerRight,
+
+            child: Text(
+              currency.name,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.getTextSecondary(context),
+              ),
+            ),
           ),
         ],
       ),
@@ -522,7 +613,6 @@ class _RateRow extends StatelessWidget {
 
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.getTextPrimary(context),
-
               fontWeight: FontWeight.w700,
             ),
           ),

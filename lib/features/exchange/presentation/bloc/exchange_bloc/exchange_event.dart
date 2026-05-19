@@ -27,27 +27,13 @@ class FetchExchangeRate extends ExchangeEvent {
 }
 
 /// ======================================================
-/// AMOUNT CHANGED
+/// SENDER AMOUNT CHANGED
 /// ======================================================
 
 class AmountChanged extends ExchangeEvent {
   final String amount;
 
   const AmountChanged(this.amount);
-
-  @override
-  List<Object?> get props => [amount];
-}
-
-/// ======================================================
-/// UPDATE SENDER AMOUNT
-/// (UI-friendly event wrapper)
-/// ======================================================
-
-class UpdateSenderAmount extends ExchangeEvent {
-  final double amount;
-
-  const UpdateSenderAmount(this.amount);
 
   @override
   List<Object?> get props => [amount];
@@ -67,11 +53,26 @@ class RecipientAmountChanged extends ExchangeEvent {
 }
 
 /// ======================================================
+/// UPDATE SENDER AMOUNT
+/// Decimal-safe version
+/// ======================================================
+
+class UpdateSenderAmount extends ExchangeEvent {
+  final Decimal amount;
+
+  const UpdateSenderAmount(this.amount);
+
+  @override
+  List<Object?> get props => [amount];
+}
+
+/// ======================================================
 /// UPDATE RECEIVER AMOUNT
+/// Decimal-safe version
 /// ======================================================
 
 class UpdateReceiverAmount extends ExchangeEvent {
-  final double amount;
+  final Decimal amount;
 
   const UpdateReceiverAmount(this.amount);
 

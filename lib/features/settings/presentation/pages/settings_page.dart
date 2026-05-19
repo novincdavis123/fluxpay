@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:fluxpay/app/theme/app_colors.dart';
@@ -38,14 +39,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
           appBar: AppBar(
             backgroundColor: Colors.transparent,
-
             elevation: 0,
-
             centerTitle: false,
 
             title: Text(
               'Settings',
-
               style: AppTextStyles.headingMedium.copyWith(
                 color: AppColors.getTextPrimary(context),
               ),
@@ -63,10 +61,11 @@ class _SettingsPageState extends State<SettingsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
 
                     children: [
+                      /// ======================================================
                       /// APPEARANCE
+                      /// ======================================================
                       Text(
                         'Appearance',
-
                         style: AppTextStyles.headingMedium.copyWith(
                           color: AppColors.getTextPrimary(context),
                         ),
@@ -76,7 +75,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       _SettingsTile(
                         title: 'Dark Mode',
-
                         subtitle: 'Enable premium dark theme',
 
                         trailing: Switch(
@@ -84,9 +82,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
                           value: settings.isDarkMode,
 
-                          onChanged: (_) {
+                          onChanged: (value) {
+                            log('Toggle Dark Mode: $value');
                             context.read<SettingsBloc>().add(
-                              const ToggleTheme(),
+                              ToggleTheme(value),
                             );
                           },
                         ),
@@ -94,10 +93,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       const SizedBox(height: AppSpacing.xl),
 
+                      /// ======================================================
                       /// NOTIFICATIONS
+                      /// ======================================================
                       Text(
                         'Notifications',
-
                         style: AppTextStyles.headingMedium.copyWith(
                           color: AppColors.getTextPrimary(context),
                         ),
@@ -107,7 +107,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       _SettingsTile(
                         title: 'Push Notifications',
-
                         subtitle: 'Transaction & transfer updates',
 
                         trailing: Switch(
@@ -115,9 +114,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
                           value: settings.notificationsEnabled,
 
-                          onChanged: (_) {
+                          onChanged: (value) {
                             context.read<SettingsBloc>().add(
-                              const ToggleNotifications(),
+                              ToggleNotifications(value),
                             );
                           },
                         ),
@@ -125,10 +124,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       const SizedBox(height: AppSpacing.xl),
 
+                      /// ======================================================
                       /// SECURITY
+                      /// ======================================================
                       Text(
                         'Security',
-
                         style: AppTextStyles.headingMedium.copyWith(
                           color: AppColors.getTextPrimary(context),
                         ),
@@ -138,7 +138,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       _SettingsTile(
                         title: 'Biometric Login',
-
                         subtitle: 'Use Face ID / Fingerprint',
 
                         trailing: Switch(
@@ -146,9 +145,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
                           value: settings.biometricsEnabled,
 
-                          onChanged: (_) {
+                          onChanged: (value) {
                             context.read<SettingsBloc>().add(
-                              const ToggleBiometrics(),
+                              ToggleBiometrics(value),
                             );
                           },
                         ),
@@ -156,10 +155,42 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       const SizedBox(height: AppSpacing.xl),
 
+                      /// ======================================================
+                      /// ANALYTICS
+                      /// ======================================================
+                      Text(
+                        'Analytics',
+                        style: AppTextStyles.headingMedium.copyWith(
+                          color: AppColors.getTextPrimary(context),
+                        ),
+                      ),
+
+                      const SizedBox(height: AppSpacing.md),
+
+                      _SettingsTile(
+                        title: 'Usage Analytics',
+                        subtitle: 'Help improve app experience',
+
+                        trailing: Switch(
+                          activeColor: AppColors.primary,
+
+                          value: settings.analyticsEnabled,
+
+                          onChanged: (value) {
+                            context.read<SettingsBloc>().add(
+                              ToggleAnalytics(value),
+                            );
+                          },
+                        ),
+                      ),
+
+                      const SizedBox(height: AppSpacing.xl),
+
+                      /// ======================================================
                       /// PREFERENCES
+                      /// ======================================================
                       Text(
                         'Preferences',
-
                         style: AppTextStyles.headingMedium.copyWith(
                           color: AppColors.getTextPrimary(context),
                         ),
@@ -193,7 +224,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
                             icon: Icon(
                               Icons.keyboard_arrow_down_rounded,
-
                               color: AppColors.getTextSecondary(context),
                             ),
 
@@ -201,13 +231,12 @@ class _SettingsPageState extends State<SettingsPage> {
                               color: AppColors.getTextPrimary(context),
                             ),
 
-                            items: currencies.map((e) {
+                            items: currencies.map((currency) {
                               return DropdownMenuItem(
-                                value: e,
+                                value: currency,
 
                                 child: Text(
-                                  e,
-
+                                  currency,
                                   style: AppTextStyles.bodyMedium.copyWith(
                                     color: AppColors.getTextPrimary(context),
                                   ),
@@ -288,7 +317,6 @@ class _SettingsTile extends StatelessWidget {
 
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.getTextPrimary(context),
-
                     fontWeight: FontWeight.w600,
                   ),
                 ),

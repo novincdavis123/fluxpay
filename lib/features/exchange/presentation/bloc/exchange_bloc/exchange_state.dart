@@ -12,15 +12,27 @@ class ExchangeState extends Equatable {
 
   final String toCurrency;
 
+  /// ======================================================
+  /// AMOUNTS
+  /// ======================================================
+
   final Decimal senderAmount;
 
   final Decimal recipientAmount;
+
+  /// ======================================================
+  /// RATE + FEES
+  /// ======================================================
 
   final Decimal exchangeRate;
 
   final Decimal fee;
 
   final Decimal totalPayable;
+
+  /// ======================================================
+  /// METADATA
+  /// ======================================================
 
   final DateTime? lastUpdated;
 
@@ -41,26 +53,40 @@ class ExchangeState extends Equatable {
     required this.errorMessage,
   });
 
+  /// ======================================================
+  /// INITIAL
+  /// ======================================================
+
   factory ExchangeState.initial() {
     return ExchangeState(
       isLoading: false,
       isStale: false,
       isOfflineMode: false,
+
+      /// DEFAULT PAIR
       fromCurrency: 'USD',
       toCurrency: 'INR',
 
-      /// DEFAULT VALUES
-      senderAmount: Decimal.parse('100'),
-      recipientAmount: Decimal.parse('0'),
-      exchangeRate: Decimal.parse('0'),
+      /// DEFAULT AMOUNT
+      senderAmount: Decimal.parse('100.00'),
 
-      fee: Decimal.parse('0'),
-      totalPayable: Decimal.parse('0'),
+      recipientAmount: Decimal.zero,
+
+      exchangeRate: Decimal.zero,
+
+      fee: Decimal.zero,
+
+      totalPayable: Decimal.zero,
 
       lastUpdated: null,
+
       errorMessage: null,
     );
   }
+
+  /// ======================================================
+  /// COPY WITH
+  /// ======================================================
 
   ExchangeState copyWith({
     bool? isLoading,
@@ -76,7 +102,7 @@ class ExchangeState extends Equatable {
     DateTime? lastUpdated,
     String? errorMessage,
 
-    /// ALLOW CLEARING ERROR
+    /// CLEAR ERROR SUPPORT
     bool clearError = false,
   }) {
     return ExchangeState(
@@ -119,27 +145,75 @@ class ExchangeState extends Equatable {
   }
 
   bool get hasValidCalculation {
-    return recipientAmount > Decimal.zero && totalPayable > Decimal.zero;
+    return senderAmount > Decimal.zero &&
+        recipientAmount > Decimal.zero &&
+        totalPayable > Decimal.zero;
+  }
+
+  bool get isSameCurrency {
+    return fromCurrency == toCurrency;
+  }
+
+  bool get ratesExpired {
+    if (lastUpdated == null) {
+      return true;
+    }
+
+    final difference = DateTime.now().difference(lastUpdated!);
+
+    return difference.inSeconds >= 30;
+  }
+
+  /// ======================================================
+  /// FORMATTERS
+  /// ======================================================
+
+  String _formatDecimal(Decimal value) {
+    return value.toStringAsFixed(2);
   }
 
   String get formattedRate {
-    return exchangeRate.toString();
+    return exchangeRate.toStringAsFixed(4);
   }
 
   String get formattedSenderAmount {
-    return senderAmount.toString();
+    return _formatDecimal(senderAmount);
   }
 
   String get formattedRecipientAmount {
-    return recipientAmount.toString();
+    return _formatDecimal(recipientAmount);
   }
 
   String get formattedFee {
-    return fee.toString();
+    return _formatDecimal(fee);
   }
 
   String get formattedTotalPayable {
-    return totalPayable.toString();
+    return _formatDecimal(totalPayable);
+  }
+
+  /// ======================================================
+  /// DISPLAY HELPERS
+  /// ======================================================
+
+  String get rateLabel {
+    return '1 $fromCurrency = ${formattedRate} $toCurrency';
+  }
+
+  String get feeLabel {
+    if (isSameCurrency) {
+      return 'Flat fee applied';
+    }
+
+    return 'Transfer fee';
+  }
+
+  String get staleMessage {
+    if (!isStale) {
+      return '';
+    }
+
+    return 'Rates are outdated. Refreshing...';
   }
 
   @override

@@ -27,6 +27,14 @@ class AppTextStyles {
     height: 1.15,
   );
 
+  static const TextStyle displaySmall = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 24,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.6,
+    height: 1.2,
+  );
+
   /// =========================================================
   /// HEADINGS
   /// =========================================================
@@ -77,6 +85,14 @@ class AppTextStyles {
     fontSize: 12,
     fontWeight: FontWeight.w400,
     height: 1.45,
+  );
+
+  static const TextStyle caption = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 11,
+    fontWeight: FontWeight.w400,
+    height: 1.4,
+    letterSpacing: 0.2,
   );
 
   /// =========================================================
@@ -136,6 +152,12 @@ class AppTextStyles {
     fontWeight: FontWeight.w600,
   );
 
+  static const TextStyle buttonSmall = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
+  );
+
   /// =========================================================
   /// LABELS
   /// =========================================================
@@ -145,6 +167,13 @@ class AppTextStyles {
     fontSize: 13,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.3,
+  );
+
+  static const TextStyle overline = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 1,
   );
 
   /// =========================================================
@@ -165,6 +194,13 @@ class AppTextStyles {
     color: AppColors.error,
   );
 
+  static const TextStyle warning = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 13,
+    fontWeight: FontWeight.w500,
+    color: AppColors.warning,
+  );
+
   /// =========================================================
   /// THEME HELPERS
   /// =========================================================
@@ -175,6 +211,10 @@ class AppTextStyles {
 
   static TextStyle displayMediumStyle(BuildContext context) {
     return displayMedium.copyWith(color: AppColors.getTextPrimary(context));
+  }
+
+  static TextStyle displaySmallStyle(BuildContext context) {
+    return displaySmall.copyWith(color: AppColors.getTextPrimary(context));
   }
 
   static TextStyle headingLargeStyle(BuildContext context) {
@@ -201,6 +241,10 @@ class AppTextStyles {
     return bodySmall.copyWith(color: AppColors.getTextMuted(context));
   }
 
+  static TextStyle captionStyle(BuildContext context) {
+    return caption.copyWith(color: AppColors.getTextMuted(context));
+  }
+
   static TextStyle amountLargeStyle(BuildContext context) {
     return amountLarge.copyWith(color: AppColors.getTextPrimary(context));
   }
@@ -221,7 +265,15 @@ class AppTextStyles {
     return buttonText.copyWith(color: Colors.white);
   }
 
+  static TextStyle buttonSmallStyle(BuildContext context) {
+    return buttonSmall.copyWith(color: Colors.white);
+  }
+
   static TextStyle labelStyle(BuildContext context) {
     return label.copyWith(color: AppColors.getTextMuted(context));
+  }
+
+  static TextStyle overlineStyle(BuildContext context) {
+    return overline.copyWith(color: AppColors.getTextMuted(context));
   }
 }

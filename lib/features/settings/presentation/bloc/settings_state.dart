@@ -19,25 +19,30 @@ class SettingsState extends Equatable {
     this.error,
   });
 
+  /// ======================================================
+  /// INITIAL
+  /// ======================================================
+
   factory SettingsState.initial() {
-    const isDarkMode = true;
+    const initialSettings = SettingsEntity(
+      isDarkMode: true,
+      notificationsEnabled: true,
+      biometricsEnabled: false,
+      defaultCurrency: 'USD',
+      analyticsEnabled: true,
+    );
 
     return SettingsState(
-      settings: const SettingsEntity(
-        isDarkMode: isDarkMode,
-        notificationsEnabled: true,
-        biometricsEnabled: false,
-        defaultCurrency: 'USD',
-        analyticsEnabled: true,
-      ),
-
-      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-
+      settings: initialSettings,
+      themeMode: initialSettings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
       isLoading: false,
-
       error: null,
     );
   }
+
+  /// ======================================================
+  /// COPY WITH
+  /// ======================================================
 
   SettingsState copyWith({
     SettingsEntity? settings,
@@ -46,10 +51,15 @@ class SettingsState extends Equatable {
     String? error,
     bool clearError = false,
   }) {
-    return SettingsState(
-      settings: settings ?? this.settings,
+    final updatedSettings = settings ?? this.settings;
 
-      themeMode: themeMode ?? this.themeMode,
+    return SettingsState(
+      settings: updatedSettings,
+
+      /// AUTO SYNC THEME MODE
+      themeMode:
+          themeMode ??
+          (updatedSettings.isDarkMode ? ThemeMode.dark : ThemeMode.light),
 
       isLoading: isLoading ?? this.isLoading,
 
@@ -57,7 +67,37 @@ class SettingsState extends Equatable {
     );
   }
 
-  bool get isDarkMode => themeMode == ThemeMode.dark;
+  /// ======================================================
+  /// HELPERS
+  /// ======================================================
+
+  bool get isDarkMode {
+    return settings.isDarkMode;
+  }
+
+  bool get notificationsEnabled {
+    return settings.notificationsEnabled;
+  }
+
+  bool get biometricsEnabled {
+    return settings.biometricsEnabled;
+  }
+
+  bool get analyticsEnabled {
+    return settings.analyticsEnabled;
+  }
+
+  String get defaultCurrency {
+    return settings.defaultCurrency;
+  }
+
+  bool get hasError {
+    return error != null && error!.isNotEmpty;
+  }
+
+  /// ======================================================
+  /// PROPS
+  /// ======================================================
 
   @override
   List<Object?> get props => [settings, themeMode, isLoading, error];

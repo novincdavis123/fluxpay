@@ -150,28 +150,27 @@ class _BeneficiaryPageState extends State<BeneficiaryPage> {
       },
 
       child: AppScaffold(
-        floatingActionButton: FloatingActionButton.extended(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 0,
+        // floatingActionButton: FloatingActionButton.extended(
+        //   backgroundColor: AppColors.primary,
+        //   foregroundColor: Colors.white,
+        //   elevation: 0,
 
-          onPressed: _showAddBeneficiarySheet,
+        //   onPressed: _showAddBeneficiarySheet,
 
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
+        //   shape: RoundedRectangleBorder(
+        //     borderRadius: BorderRadius.circular(18),
+        //   ),
 
-          icon: const Icon(Icons.add_rounded),
+        //   icon: const Icon(Icons.add_rounded),
 
-          label: Text(
-            'Add Beneficiary',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-
+        //   label: Text(
+        //     'Add Beneficiary',
+        //     style: AppTextStyles.bodyMedium.copyWith(
+        //       color: Colors.white,
+        //       fontWeight: FontWeight.w600,
+        //     ),
+        //   ),
+        // ),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),

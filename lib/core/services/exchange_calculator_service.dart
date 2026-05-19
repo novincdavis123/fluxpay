@@ -4,49 +4,86 @@ import '../models/exchange_calculation_result.dart';
 
 class ExchangeCalculatorService {
   /// ======================================================
-  /// MAIN CALCULATION
+  /// FORWARD CALCULATION
+  /// Sender Pays -> Recipient Gets
   /// ======================================================
 
-  ExchangeCalculationResult calculate({
-    required Decimal amount,
+  ExchangeCalculationResult calculateFromSender({
+    required Decimal senderAmount,
     required Decimal rate,
     required bool isWeekend,
     required bool sameCurrency,
   }) {
-    /// SAFETY
-    if (amount <= Decimal.zero || rate <= Decimal.zero) {
-      return ExchangeCalculationResult(
-        exchangeRate: rate,
-        fee: Decimal.zero,
-        senderPays: amount,
-        recipientGets: Decimal.zero,
-        totalPayable: amount,
-      );
+    if (senderAmount <= Decimal.zero || rate <= Decimal.zero) {
+      return _empty(rate);
     }
 
     final adjustedRate = _applyRateAdjustment(rate: rate, isWeekend: isWeekend);
 
+    /// Fee based on sender amount
     final fee = _calculateFee(
-      amount: amount,
+      amount: senderAmount,
       isWeekend: isWeekend,
       sameCurrency: sameCurrency,
     );
 
-    final recipientGets = _roundMoney(amount * adjustedRate);
+    /// Transferable amount after fee
+    final transferableAmount = senderAmount - fee;
 
-    final totalPayable = _roundMoney(amount + fee);
+    final recipientGets = _roundMoney(transferableAmount * adjustedRate);
 
     return ExchangeCalculationResult(
       exchangeRate: adjustedRate,
       fee: fee,
-      senderPays: amount,
+      senderPays: senderAmount,
       recipientGets: recipientGets,
+      totalPayable: senderAmount,
+    );
+  }
+
+  /// ======================================================
+  /// REVERSE CALCULATION
+  /// Recipient Gets -> Sender Pays
+  /// ======================================================
+
+  ExchangeCalculationResult calculateFromRecipient({
+    required Decimal recipientAmount,
+    required Decimal rate,
+    required bool isWeekend,
+    required bool sameCurrency,
+  }) {
+    if (recipientAmount <= Decimal.zero || rate <= Decimal.zero) {
+      return _empty(rate);
+    }
+
+    final adjustedRate = _applyRateAdjustment(rate: rate, isWeekend: isWeekend);
+
+    /// Base sender amount before fees
+    Decimal senderAmount = (recipientAmount / adjustedRate).toDecimal();
+
+    senderAmount = _roundMoney(senderAmount);
+
+    /// Fee recalculated
+    final fee = _calculateFee(
+      amount: senderAmount,
+      isWeekend: isWeekend,
+      sameCurrency: sameCurrency,
+    );
+
+    /// Final sender payable
+    final totalPayable = _roundMoney(senderAmount + fee);
+
+    return ExchangeCalculationResult(
+      exchangeRate: adjustedRate,
+      fee: fee,
+      senderPays: totalPayable,
+      recipientGets: recipientAmount,
       totalPayable: totalPayable,
     );
   }
 
   /// ======================================================
-  /// FEE CALCULATION
+  /// DYNAMIC FEES
   /// ======================================================
 
   Decimal _calculateFee({
@@ -56,24 +93,17 @@ class ExchangeCalculatorService {
   }) {
     Decimal fee;
 
-    /// SAME CURRENCY
     if (sameCurrency) {
       fee = Decimal.parse('1');
-    }
-    /// SMALL TRANSFER
-    else if (amount < Decimal.parse('100')) {
+    } else if (amount < Decimal.parse('100')) {
       fee = Decimal.parse('2.5');
-    }
-    /// MEDIUM TRANSFER
-    else if (amount < Decimal.parse('1000')) {
+    } else if (amount < Decimal.parse('1000')) {
       fee = amount * Decimal.parse('0.015');
-    }
-    /// LARGE TRANSFER
-    else {
+    } else {
       fee = amount * Decimal.parse('0.008');
     }
 
-    /// WEEKEND EXTRA FEE
+    /// Weekend surcharge
     if (isWeekend) {
       fee += amount * Decimal.parse('0.01');
     }
@@ -82,7 +112,7 @@ class ExchangeCalculatorService {
   }
 
   /// ======================================================
-  /// WEEKEND FX ADJUSTMENT
+  /// RATE ADJUSTMENT
   /// ======================================================
 
   Decimal _applyRateAdjustment({
@@ -93,37 +123,33 @@ class ExchangeCalculatorService {
       return rate;
     }
 
-    /// SLIGHT WEEKEND SPREAD
-    final adjustment = Decimal.parse('0.995');
-
-    return rate * adjustment;
+    return rate * Decimal.parse('0.995');
   }
 
   /// ======================================================
-  /// MONEY ROUNDING
+  /// ROUNDING
   /// ======================================================
 
   Decimal _roundMoney(Decimal value) {
-    return Decimal.parse(value.toStringAsFixed(2));
+    return value.round(scale: 2);
   }
 
   /// ======================================================
-  /// REVERSE CALCULATION
+  /// EMPTY
   /// ======================================================
 
-  Decimal reverseCalculateSenderAmount({
-    required Decimal recipientAmount,
-    required Decimal exchangeRate,
-  }) {
-    if (exchangeRate <= Decimal.zero) {
-      return Decimal.zero;
-    }
-
-    return _roundMoney((recipientAmount / exchangeRate).toDecimal());
+  ExchangeCalculationResult _empty(Decimal rate) {
+    return ExchangeCalculationResult(
+      exchangeRate: rate,
+      fee: Decimal.zero,
+      senderPays: Decimal.zero,
+      recipientGets: Decimal.zero,
+      totalPayable: Decimal.zero,
+    );
   }
 
   /// ======================================================
-  /// ESTIMATED DELIVERY TIME
+  /// DELIVERY
   /// ======================================================
 
   String getEstimatedDelivery({

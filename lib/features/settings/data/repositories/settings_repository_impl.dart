@@ -1,15 +1,17 @@
 import '../../domain/entities/settings_entity.dart';
-
 import '../../domain/repositories/settings_repository.dart';
 
 import '../datasource/settings_local_datasource.dart';
-
 import '../models/settings_model.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
   final SettingsLocalDataSource localDataSource;
 
   SettingsRepositoryImpl({required this.localDataSource});
+
+  /// ======================================================
+  /// GET SETTINGS
+  /// ======================================================
 
   @override
   Future<SettingsEntity> getSettings() async {
@@ -18,6 +20,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
     return model.toEntity();
   }
 
+  /// ======================================================
+  /// SAVE SETTINGS
+  /// ======================================================
+
   @override
   Future<void> saveSettings(SettingsEntity settings) async {
     final model = SettingsModel.fromEntity(settings);
@@ -25,43 +31,85 @@ class SettingsRepositoryImpl implements SettingsRepository {
     await localDataSource.saveSettings(model);
   }
 
+  /// ======================================================
+  /// UPDATE THEME
+  /// ======================================================
+
   @override
-  Future<void> toggleTheme() async {
+  Future<void> updateTheme(bool isDarkMode) async {
     final current = await getSettings();
 
-    final updated = current.copyWith(isDarkMode: !current.isDarkMode);
+    final updated = current.copyWith(isDarkMode: isDarkMode);
 
     await saveSettings(updated);
   }
 
+  /// ======================================================
+  /// UPDATE NOTIFICATIONS
+  /// ======================================================
+
   @override
-  Future<void> toggleNotifications() async {
+  Future<void> updateNotifications(bool enabled) async {
     final current = await getSettings();
 
-    final updated = current.copyWith(
-      notificationsEnabled: !current.notificationsEnabled,
-    );
+    final updated = current.copyWith(notificationsEnabled: enabled);
 
     await saveSettings(updated);
   }
 
+  /// ======================================================
+  /// UPDATE BIOMETRICS
+  /// ======================================================
+
   @override
-  Future<void> toggleBiometrics() async {
+  Future<void> updateBiometrics(bool enabled) async {
     final current = await getSettings();
 
-    final updated = current.copyWith(
-      biometricsEnabled: !current.biometricsEnabled,
-    );
+    final updated = current.copyWith(biometricsEnabled: enabled);
 
     await saveSettings(updated);
   }
 
+  /// ======================================================
+  /// UPDATE ANALYTICS
+  /// ======================================================
+
   @override
-  Future<void> changeCurrency(String currency) async {
+  Future<void> updateAnalytics(bool enabled) async {
+    final current = await getSettings();
+
+    final updated = current.copyWith(analyticsEnabled: enabled);
+
+    await saveSettings(updated);
+  }
+
+  /// ======================================================
+  /// UPDATE CURRENCY
+  /// ======================================================
+
+  @override
+  Future<void> updateCurrency(String currency) async {
     final current = await getSettings();
 
     final updated = current.copyWith(defaultCurrency: currency);
 
     await saveSettings(updated);
+  }
+
+  /// ======================================================
+  /// RESET SETTINGS
+  /// ======================================================
+
+  @override
+  Future<void> resetSettings() async {
+    const defaultSettings = SettingsEntity(
+      isDarkMode: true,
+      notificationsEnabled: true,
+      biometricsEnabled: false,
+      defaultCurrency: 'USD',
+      analyticsEnabled: true,
+    );
+
+    await saveSettings(defaultSettings);
   }
 }

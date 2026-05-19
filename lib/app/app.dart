@@ -1,79 +1,150 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:fluxpay/app/router/app_router.dart';
 import 'package:fluxpay/app/theme/app_theme.dart';
 
 import 'package:fluxpay/core/connectivity/connectivity_cubit.dart';
+import 'package:fluxpay/core/lifecycle/app_lifecycle_handler.dart';
+
+import 'package:fluxpay/features/auth/presentation/bloc/app_lock_bloc.dart';
+import 'package:fluxpay/features/auth/presentation/bloc/app_lock_event.dart';
+
+import 'package:fluxpay/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:fluxpay/features/auth/presentation/bloc/auth_event.dart'
+    hide LockAppRequested;
+import 'package:fluxpay/features/auth/presentation/bloc/auth_state.dart';
 
 import 'package:fluxpay/features/beneficiaries/presentation/bloc/beneficiary_bloc.dart';
 
 import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc/exchange_bloc.dart';
 
-import 'package:fluxpay/features/exchange/presentation/pages/home_page.dart';
-
 import 'package:fluxpay/features/settings/presentation/bloc/settings_bloc.dart';
 import 'package:fluxpay/features/settings/presentation/bloc/settings_event.dart';
 import 'package:fluxpay/features/settings/presentation/bloc/settings_state.dart';
+
+import 'package:fluxpay/features/splash/presentation/bloc/splash_bloc.dart';
 
 import 'package:fluxpay/features/transactions/presentation/bloc/transaction_bloc.dart';
 
 import 'package:fluxpay/injection_container.dart';
 
-class FluxPayApp extends StatelessWidget {
+class FluxPayApp extends StatefulWidget {
   const FluxPayApp({super.key});
+
+  @override
+  State<FluxPayApp> createState() => _FluxPayAppState();
+}
+
+class _FluxPayAppState extends State<FluxPayApp> {
+  AppLifecycleHandler? _lifecycleHandler;
+
+  bool _initializedLifecycle = false;
+
+  @override
+  void dispose() {
+    _lifecycleHandler?.dispose();
+
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         /// ======================================================
+        /// AUTH
+        /// ======================================================
+        BlocProvider<AuthBloc>(
+          create: (_) => sl<AuthBloc>()..add(const CheckSessionRequested()),
+        ),
+
+        /// ======================================================
+        /// APP LOCK
+        /// ======================================================
+        BlocProvider<AppLockBloc>(create: (_) => sl<AppLockBloc>()),
+
+        /// ======================================================
+        /// SPLASH
+        /// ======================================================
+        BlocProvider<SplashBloc>(create: (_) => sl<SplashBloc>()),
+
+        /// ======================================================
         /// EXCHANGE
         /// ======================================================
-        BlocProvider(create: (_) => sl<ExchangeBloc>()),
+        BlocProvider<ExchangeBloc>(create: (_) => sl<ExchangeBloc>()),
 
         /// ======================================================
         /// BENEFICIARIES
         /// ======================================================
-        BlocProvider(create: (_) => sl<BeneficiaryBloc>()),
+        BlocProvider<BeneficiaryBloc>(create: (_) => sl<BeneficiaryBloc>()),
 
         /// ======================================================
         /// TRANSACTIONS
         /// ======================================================
-        BlocProvider(
+        BlocProvider<TransactionBloc>(
           create: (_) => sl<TransactionBloc>()..add(const LoadTransactions()),
         ),
 
         /// ======================================================
         /// CONNECTIVITY
         /// ======================================================
-        BlocProvider(create: (_) => sl<ConnectivityCubit>()),
+        BlocProvider<ConnectivityCubit>(create: (_) => sl<ConnectivityCubit>()),
 
         /// ======================================================
         /// SETTINGS
         /// ======================================================
-        BlocProvider(
+        BlocProvider<SettingsBloc>(
           create: (_) => sl<SettingsBloc>()..add(const LoadSettings()),
         ),
       ],
 
-      /// ======================================================
-      /// REACTIVE THEME
-      /// ======================================================
-      child: BlocBuilder<SettingsBloc, SettingsState>(
-        builder: (context, state) {
-          return MaterialApp(
-            title: 'FluxPay',
+      child: Builder(
+        builder: (context) {
+          /// ======================================================
+          /// INIT LIFECYCLE ONLY ONCE
+          /// ======================================================
 
-            debugShowCheckedModeBanner: false,
+          if (!_initializedLifecycle) {
+            _initializedLifecycle = true;
 
-            theme: AppTheme.lightTheme,
+            _lifecycleHandler = AppLifecycleHandler(
+              authBloc: context.read<AuthBloc>(),
+            );
 
-            darkTheme: AppTheme.darkTheme,
+            _lifecycleHandler!.initialize();
+          }
 
-            themeMode: state.themeMode,
+          return BlocListener<AuthBloc, AuthState>(
+            listener: (context, state) {
+              /// ======================================================
+              /// LOCK APP
+              /// ======================================================
 
-            home: const HomePage(),
+              if (state.isLocked ||
+                  state.requiresBiometric ||
+                  state.requiresPin) {
+                context.read<AppLockBloc>().add(const LockAppRequested());
+              }
+            },
+
+            child: BlocBuilder<SettingsBloc, SettingsState>(
+              builder: (context, state) {
+                return MaterialApp(
+                  title: 'FluxPay',
+
+                  debugShowCheckedModeBanner: false,
+
+                  theme: AppTheme.lightTheme,
+
+                  darkTheme: AppTheme.darkTheme,
+
+                  themeMode: state.themeMode,
+
+                  home: const AppRouter(),
+                );
+              },
+            ),
           );
         },
       ),

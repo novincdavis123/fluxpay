@@ -1,6 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
+/// ======================================================
+/// BASE EVENT
+/// ======================================================
+
 abstract class SettingsEvent extends Equatable {
   const SettingsEvent();
 
@@ -17,16 +21,17 @@ class LoadSettings extends SettingsEvent {
 }
 
 /// ======================================================
-/// TOGGLE THEME
+/// THEME
 /// ======================================================
 
 class ToggleTheme extends SettingsEvent {
-  const ToggleTheme();
-}
+  final bool enabled;
 
-/// ======================================================
-/// CHANGE THEME MODE
-/// ======================================================
+  const ToggleTheme(this.enabled);
+
+  @override
+  List<Object?> get props => [enabled];
+}
 
 class ChangeThemeMode extends SettingsEvent {
   final ThemeMode themeMode;
@@ -38,23 +43,33 @@ class ChangeThemeMode extends SettingsEvent {
 }
 
 /// ======================================================
-/// TOGGLE NOTIFICATIONS
+/// NOTIFICATIONS
 /// ======================================================
 
 class ToggleNotifications extends SettingsEvent {
-  const ToggleNotifications();
+  final bool enabled;
+
+  const ToggleNotifications(this.enabled);
+
+  @override
+  List<Object?> get props => [enabled];
 }
 
 /// ======================================================
-/// TOGGLE BIOMETRICS
+/// BIOMETRICS
 /// ======================================================
 
 class ToggleBiometrics extends SettingsEvent {
-  const ToggleBiometrics();
+  final bool enabled;
+
+  const ToggleBiometrics(this.enabled);
+
+  @override
+  List<Object?> get props => [enabled];
 }
 
 /// ======================================================
-/// CHANGE DEFAULT CURRENCY
+/// DEFAULT CURRENCY
 /// ======================================================
 
 class ChangeCurrency extends SettingsEvent {
@@ -67,15 +82,20 @@ class ChangeCurrency extends SettingsEvent {
 }
 
 /// ======================================================
-/// TOGGLE ANALYTICS
+/// ANALYTICS
 /// ======================================================
 
 class ToggleAnalytics extends SettingsEvent {
-  const ToggleAnalytics();
+  final bool enabled;
+
+  const ToggleAnalytics(this.enabled);
+
+  @override
+  List<Object?> get props => [enabled];
 }
 
 /// ======================================================
-/// CLEAR SETTINGS ERROR
+/// CLEAR ERROR
 /// ======================================================
 
 class ClearSettingsError extends SettingsEvent {

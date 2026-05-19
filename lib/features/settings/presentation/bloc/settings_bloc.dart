@@ -11,10 +11,6 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final SettingsRepository repository;
 
   SettingsBloc({required this.repository}) : super(SettingsState.initial()) {
-    /// ======================================================
-    /// EVENT HANDLERS
-    /// ======================================================
-
     on<LoadSettings>(_onLoadSettings);
 
     on<ToggleTheme>(_onToggleTheme);
@@ -66,14 +62,17 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     Emitter<SettingsState> emit,
   ) async {
     try {
-      await repository.toggleTheme();
+      final updatedSettings = state.settings.copyWith(
+        isDarkMode: event.enabled,
+      );
 
-      final updated = await repository.getSettings();
+      await repository.saveSettings(updatedSettings);
 
       emit(
         state.copyWith(
-          settings: updated,
-          themeMode: updated.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          settings: updatedSettings,
+          themeMode: event.enabled ? ThemeMode.dark : ThemeMode.light,
+          clearError: true,
         ),
       );
     } catch (e) {
@@ -90,20 +89,18 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     Emitter<SettingsState> emit,
   ) async {
     try {
-      final updatedSettings = SettingsEntity(
+      final updatedSettings = state.settings.copyWith(
         isDarkMode: event.themeMode == ThemeMode.dark,
-
-        notificationsEnabled: state.settings.notificationsEnabled,
-
-        biometricsEnabled: state.settings.biometricsEnabled,
-
-        defaultCurrency: state.settings.defaultCurrency,
-
-        analyticsEnabled: state.settings.analyticsEnabled,
       );
 
+      await repository.saveSettings(updatedSettings);
+
       emit(
-        state.copyWith(settings: updatedSettings, themeMode: event.themeMode),
+        state.copyWith(
+          settings: updatedSettings,
+          themeMode: event.themeMode,
+          clearError: true,
+        ),
       );
     } catch (e) {
       emit(state.copyWith(error: 'Failed to update theme mode'));
@@ -119,11 +116,13 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     Emitter<SettingsState> emit,
   ) async {
     try {
-      await repository.toggleNotifications();
+      final updatedSettings = state.settings.copyWith(
+        notificationsEnabled: event.enabled,
+      );
 
-      final updated = await repository.getSettings();
+      await repository.saveSettings(updatedSettings);
 
-      emit(state.copyWith(settings: updated));
+      emit(state.copyWith(settings: updatedSettings, clearError: true));
     } catch (e) {
       emit(state.copyWith(error: 'Failed to update notifications'));
     }
@@ -138,11 +137,13 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     Emitter<SettingsState> emit,
   ) async {
     try {
-      await repository.toggleBiometrics();
+      final updatedSettings = state.settings.copyWith(
+        biometricsEnabled: event.enabled,
+      );
 
-      final updated = await repository.getSettings();
+      await repository.saveSettings(updatedSettings);
 
-      emit(state.copyWith(settings: updated));
+      emit(state.copyWith(settings: updatedSettings, clearError: true));
     } catch (e) {
       emit(state.copyWith(error: 'Failed to update biometrics'));
     }
@@ -157,11 +158,13 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     Emitter<SettingsState> emit,
   ) async {
     try {
-      await repository.changeCurrency(event.currency);
+      final updatedSettings = state.settings.copyWith(
+        defaultCurrency: event.currency,
+      );
 
-      final updated = await repository.getSettings();
+      await repository.saveSettings(updatedSettings);
 
-      emit(state.copyWith(settings: updated));
+      emit(state.copyWith(settings: updatedSettings, clearError: true));
     } catch (e) {
       emit(state.copyWith(error: 'Failed to change currency'));
     }
@@ -176,19 +179,13 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     Emitter<SettingsState> emit,
   ) async {
     try {
-      final updatedSettings = SettingsEntity(
-        isDarkMode: state.settings.isDarkMode,
-
-        notificationsEnabled: state.settings.notificationsEnabled,
-
-        biometricsEnabled: state.settings.biometricsEnabled,
-
-        defaultCurrency: state.settings.defaultCurrency,
-
-        analyticsEnabled: !state.settings.analyticsEnabled,
+      final updatedSettings = state.settings.copyWith(
+        analyticsEnabled: event.enabled,
       );
 
-      emit(state.copyWith(settings: updatedSettings));
+      await repository.saveSettings(updatedSettings);
+
+      emit(state.copyWith(settings: updatedSettings, clearError: true));
     } catch (e) {
       emit(state.copyWith(error: 'Failed to update analytics settings'));
     }

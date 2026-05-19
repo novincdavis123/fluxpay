@@ -14,6 +14,8 @@ import 'package:fluxpay/features/beneficiaries/presentation/bloc/beneficiary_eve
 import 'package:fluxpay/features/beneficiaries/presentation/pages/beneficiary_page.dart';
 
 import 'package:fluxpay/features/exchange/presentation/pages/exchange_page.dart';
+import 'package:fluxpay/features/settings/presentation/pages/profile.dart'
+    hide Navigator;
 
 import 'package:fluxpay/features/settings/presentation/pages/settings_page.dart';
 
@@ -126,6 +128,13 @@ class _HomePageState extends State<HomePage> {
 
                       onTap: () async {
                         await AppHaptics.selection();
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ProfilePage(),
+                          ),
+                        );
                       },
                     ),
                   ],
