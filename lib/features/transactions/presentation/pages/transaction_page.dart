@@ -29,6 +29,10 @@ class _TransactionPageState extends State<TransactionPage> {
 
   final TextEditingController _searchController = TextEditingController();
 
+  final TextEditingController _minAmountController = TextEditingController();
+
+  final TextEditingController _maxAmountController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -43,6 +47,10 @@ class _TransactionPageState extends State<TransactionPage> {
     _scrollController.dispose();
 
     _searchController.dispose();
+
+    _minAmountController.dispose();
+
+    _maxAmountController.dispose();
 
     super.dispose();
   }
@@ -59,18 +67,246 @@ class _TransactionPageState extends State<TransactionPage> {
     }
   }
 
+  bool get _hasAmountFilter {
+    return _minAmountController.text.isNotEmpty ||
+        _maxAmountController.text.isNotEmpty;
+  }
+
+  void _clearAmountFilters() {
+    _minAmountController.clear();
+
+    _maxAmountController.clear();
+
+    context.read<TransactionBloc>().add(
+      const AmountRangeFilterChanged(minAmount: null, maxAmount: null),
+    );
+
+    setState(() {});
+  }
+
+  void _showAdvancedFilterBottomSheet(TransactionState state) {
+    final currencies = [
+      {'code': 'USD', 'symbol': '\$'},
+      {'code': 'EUR', 'symbol': '€'},
+      {'code': 'GBP', 'symbol': '£'},
+      {'code': 'INR', 'symbol': '₹'},
+      {'code': 'AED', 'symbol': 'د.إ'},
+    ];
+
+    String? selectedCurrency = state.selectedCurrency;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: EdgeInsets.only(
+                left: AppSpacing.lg,
+                right: AppSpacing.lg,
+                top: AppSpacing.lg,
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom + AppSpacing.xl,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.getCardColor(context),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(34),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 60,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(100),
+                        color: AppColors.getBorderColor(context),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  Text(
+                    'Advanced Filters',
+                    style: AppTextStyles.headingMedium.copyWith(
+                      color: AppColors.getTextPrimary(context),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: currencies.map((currencyData) {
+                      final code = currencyData['code']!;
+                      final symbol = currencyData['symbol']!;
+
+                      final selected = selectedCurrency == code;
+
+                      return GestureDetector(
+                        onTap: () {
+                          setModalState(() {
+                            selectedCurrency = selected ? null : code;
+                          });
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: selected
+                                ? AppColors.primary
+                                : AppColors.getInputFill(context),
+                            border: Border.all(
+                              color: selected
+                                  ? AppColors.primary
+                                  : AppColors.getBorderColor(context),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                symbol,
+                                style: TextStyle(
+                                  color: selected
+                                      ? Colors.white
+                                      : AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+
+                              const SizedBox(width: 8),
+
+                              Text(
+                                code,
+                                style: TextStyle(
+                                  color: selected
+                                      ? Colors.white
+                                      : AppColors.getTextPrimary(context),
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _AmountField(
+                          controller: _minAmountController,
+                          hint: 'Min Amount',
+                          onChanged: (_) {},
+                        ),
+                      ),
+
+                      const SizedBox(width: 14),
+
+                      Expanded(
+                        child: _AmountField(
+                          controller: _maxAmountController,
+                          hint: 'Max Amount',
+                          onChanged: (_) {},
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            _minAmountController.clear();
+
+                            _maxAmountController.clear();
+
+                            context.read<TransactionBloc>().add(
+                              const ClearTransactionFilters(),
+                            );
+
+                            Navigator.pop(context);
+
+                            setState(() {});
+                          },
+                          child: const Text('Clear'),
+                        ),
+                      ),
+
+                      const SizedBox(width: 14),
+
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            final minAmount = double.tryParse(
+                              _minAmountController.text,
+                            );
+
+                            final maxAmount = double.tryParse(
+                              _maxAmountController.text,
+                            );
+
+                            context.read<TransactionBloc>().add(
+                              CurrencyFilterChanged(selectedCurrency),
+                            );
+
+                            context.read<TransactionBloc>().add(
+                              AmountRangeFilterChanged(
+                                minAmount: minAmount,
+                                maxAmount: maxAmount,
+                              ),
+                            );
+
+                            Navigator.pop(context);
+
+                            setState(() {});
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                          ),
+                          child: const Text('Apply'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<TransactionBloc, TransactionState>(
       listenWhen: (previous, current) =>
           previous.errorMessage != current.errorMessage,
-
       listener: (context, state) {
         if (state.errorMessage != null && state.errorMessage!.isNotEmpty) {
           AppSnackbar.showError(context, message: state.errorMessage!);
         }
       },
-
       child: BlocBuilder<ConnectivityCubit, ConnectivityState>(
         builder: (context, connectivityState) {
           final isOffline =
@@ -78,27 +314,56 @@ class _TransactionPageState extends State<TransactionPage> {
 
           return Scaffold(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-
             appBar: AppBar(
               elevation: 0,
               backgroundColor: Colors.transparent,
-
               centerTitle: false,
-
               title: Text(
                 'Transactions',
                 style: AppTextStyles.headingMedium.copyWith(
                   color: AppColors.getTextPrimary(context),
                 ),
               ),
-            ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: GestureDetector(
+                    onTap: () {
+                      final currentState = context
+                          .read<TransactionBloc>()
+                          .state;
 
+                      _showAdvancedFilterBottomSheet(currentState);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _hasAmountFilter
+                            ? AppColors.primary
+                            : AppColors.getCardColor(context),
+                        border: Border.all(
+                          color: _hasAmountFilter
+                              ? AppColors.primary
+                              : AppColors.getBorderColor(context),
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.tune_rounded,
+                        size: 22,
+                        color: _hasAmountFilter
+                            ? Colors.white
+                            : AppColors.getTextPrimary(context),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             body: isOffline
                 ? OfflineEmptyState(
-                    title: 'No Internet Connection',
-
-                    subtitle: 'Transactions cannot be refreshed while offline.',
-
+                    title: 'Offline Mode',
+                    subtitle: 'Cached transactions are still available.',
                     onRetry: () {
                       context.read<ConnectivityCubit>().checkConnection();
                     },
@@ -116,52 +381,40 @@ class _TransactionPageState extends State<TransactionPage> {
 
                       return Column(
                         children: [
-                          /// SEARCH BAR
                           Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: AppSpacing.lg,
                             ),
-
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(20),
-
                                 color: AppColors.getInputFill(context),
-
                                 border: Border.all(
                                   color: AppColors.getBorderColor(context),
                                 ),
                               ),
-
                               child: TextField(
                                 controller: _searchController,
-
                                 style: AppTextStyles.bodyMedium.copyWith(
                                   color: AppColors.getTextPrimary(context),
                                 ),
-
                                 onChanged: (value) {
-                                  setState(() {});
-
                                   context.read<TransactionBloc>().add(
                                     SearchTransactions(value),
                                   );
-                                },
 
+                                  setState(() {});
+                                },
                                 decoration: InputDecoration(
                                   hintText: 'Search transactions',
-
                                   hintStyle: AppTextStyles.bodySmall.copyWith(
                                     color: AppColors.getTextMuted(context),
                                   ),
-
                                   border: InputBorder.none,
-
                                   prefixIcon: Icon(
                                     Icons.search_rounded,
                                     color: AppColors.getTextSecondary(context),
                                   ),
-
                                   suffixIcon: _searchController.text.isNotEmpty
                                       ? GestureDetector(
                                           onTap: () {
@@ -173,17 +426,14 @@ class _TransactionPageState extends State<TransactionPage> {
 
                                             setState(() {});
                                           },
-
                                           child: Icon(
                                             Icons.close_rounded,
-
                                             color: AppColors.getTextSecondary(
                                               context,
                                             ),
                                           ),
                                         )
                                       : null,
-
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 18,
                                     vertical: 18,
@@ -195,24 +445,18 @@ class _TransactionPageState extends State<TransactionPage> {
 
                           const SizedBox(height: AppSpacing.lg),
 
-                          /// FILTERS
                           SizedBox(
                             height: 46,
-
                             child: ListView(
                               scrollDirection: Axis.horizontal,
-
                               padding: const EdgeInsets.symmetric(
                                 horizontal: AppSpacing.lg,
                               ),
-
                               children: [
                                 _FilterChipWidget(
                                   label: 'All',
-
                                   selected:
                                       state.filter == TransactionFilter.all,
-
                                   onTap: () {
                                     context.read<TransactionBloc>().add(
                                       const FilterTransactions(
@@ -224,11 +468,9 @@ class _TransactionPageState extends State<TransactionPage> {
 
                                 _FilterChipWidget(
                                   label: 'Completed',
-
                                   selected:
                                       state.filter ==
                                       TransactionFilter.completed,
-
                                   onTap: () {
                                     context.read<TransactionBloc>().add(
                                       const FilterTransactions(
@@ -240,10 +482,8 @@ class _TransactionPageState extends State<TransactionPage> {
 
                                 _FilterChipWidget(
                                   label: 'Pending',
-
                                   selected:
                                       state.filter == TransactionFilter.pending,
-
                                   onTap: () {
                                     context.read<TransactionBloc>().add(
                                       const FilterTransactions(
@@ -255,11 +495,9 @@ class _TransactionPageState extends State<TransactionPage> {
 
                                 _FilterChipWidget(
                                   label: 'Processing',
-
                                   selected:
                                       state.filter ==
                                       TransactionFilter.processing,
-
                                   onTap: () {
                                     context.read<TransactionBloc>().add(
                                       const FilterTransactions(
@@ -271,10 +509,8 @@ class _TransactionPageState extends State<TransactionPage> {
 
                                 _FilterChipWidget(
                                   label: 'Failed',
-
                                   selected:
                                       state.filter == TransactionFilter.failed,
-
                                   onTap: () {
                                     context.read<TransactionBloc>().add(
                                       const FilterTransactions(
@@ -283,25 +519,33 @@ class _TransactionPageState extends State<TransactionPage> {
                                     );
                                   },
                                 ),
+
+                                _FilterChipWidget(
+                                  label: 'Refunded',
+                                  selected:
+                                      state.filter ==
+                                      TransactionFilter.refunded,
+                                  onTap: () {
+                                    context.read<TransactionBloc>().add(
+                                      const FilterTransactions(
+                                        TransactionFilter.refunded,
+                                      ),
+                                    );
+                                  },
+                                ),
                               ],
                             ),
                           ),
 
-                          const SizedBox(height: AppSpacing.md),
-
-                          /// EMPTY STATE
                           if (state.filteredTransactions.isEmpty)
                             Expanded(
                               child: Center(
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
-
                                   children: [
                                     Icon(
                                       Icons.receipt_long_rounded,
-
                                       size: 72,
-
                                       color: AppColors.getTextMuted(
                                         context,
                                       ).withOpacity(0.3),
@@ -311,7 +555,6 @@ class _TransactionPageState extends State<TransactionPage> {
 
                                     Text(
                                       'No transactions found',
-
                                       style: AppTextStyles.headingSmall
                                           .copyWith(
                                             color: AppColors.getTextPrimary(
@@ -323,8 +566,7 @@ class _TransactionPageState extends State<TransactionPage> {
                                     const SizedBox(height: AppSpacing.sm),
 
                                     Text(
-                                      'Your transfers will appear here',
-
+                                      'Try changing filters or search',
                                       style: AppTextStyles.bodyMedium.copyWith(
                                         color: AppColors.getTextSecondary(
                                           context,
@@ -336,43 +578,34 @@ class _TransactionPageState extends State<TransactionPage> {
                               ),
                             )
                           else
-                            /// TRANSACTION LIST
                             Expanded(
                               child: RefreshIndicator(
                                 color: AppColors.primary,
-
                                 backgroundColor: AppColors.getCardColor(
                                   context,
                                 ),
-
                                 onRefresh: () async {
                                   context.read<TransactionBloc>().add(
                                     const LoadTransactions(),
                                   );
                                 },
-
                                 child: ListView.builder(
                                   controller: _scrollController,
-
                                   physics:
                                       const AlwaysScrollableScrollPhysics(),
-
                                   padding: const EdgeInsets.only(
                                     left: AppSpacing.lg,
                                     right: AppSpacing.lg,
                                     bottom: AppSpacing.xl,
                                   ),
-
                                   itemCount:
                                       state.filteredTransactions.length +
                                       (state.isPaginating ? 1 : 0),
-
                                   itemBuilder: (context, index) {
                                     if (index >=
                                         state.filteredTransactions.length) {
                                       return const Padding(
                                         padding: EdgeInsets.all(AppSpacing.lg),
-
                                         child: Center(
                                           child: CircularProgressIndicator(),
                                         ),
@@ -399,7 +632,6 @@ class _TransactionPageState extends State<TransactionPage> {
                                     return Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
-
                                       children: [
                                         if (showHeader)
                                           Padding(
@@ -407,12 +639,10 @@ class _TransactionPageState extends State<TransactionPage> {
                                               top: 18,
                                               bottom: 12,
                                             ),
-
                                             child: Text(
                                               _formatTimelineDate(
                                                 transaction.createdAt,
                                               ),
-
                                               style: AppTextStyles.headingSmall
                                                   .copyWith(
                                                     color:
@@ -476,33 +706,25 @@ class _FilterChipWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: AppSpacing.md),
-
       child: GestureDetector(
         onTap: onTap,
-
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
-
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(100),
-
             color: selected
                 ? AppColors.primary
                 : AppColors.getCardColor(context),
-
             border: Border.all(
               color: selected
                   ? AppColors.primary
                   : AppColors.getBorderColor(context),
             ),
           ),
-
           child: Center(
             child: Text(
               label,
-
               style:
                   (selected
                           ? AppTextStyles.bodyMedium
@@ -513,6 +735,44 @@ class _FilterChipWidget extends StatelessWidget {
                             : AppColors.getTextSecondary(context),
                       ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AmountField extends StatelessWidget {
+  final TextEditingController controller;
+
+  final String hint;
+
+  final Function(String) onChanged;
+
+  const _AmountField({
+    required this.controller,
+    required this.hint,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        color: AppColors.getInputFill(context),
+        border: Border.all(color: AppColors.getBorderColor(context)),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        onChanged: onChanged,
+        decoration: InputDecoration(
+          hintText: hint,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
           ),
         ),
       ),

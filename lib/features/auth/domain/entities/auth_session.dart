@@ -20,4 +20,24 @@ class AuthSession {
   bool get isExpired {
     return DateTime.now().isAfter(expiresAt);
   }
+
+  /// =====================================================
+  /// COPY WITH
+  /// =====================================================
+
+  AuthSession copyWith({
+    String? accessToken,
+    String? refreshToken,
+    DateTime? expiresAt,
+    bool? biometricEnabled,
+    bool? pinEnabled,
+  }) {
+    return AuthSession(
+      accessToken: accessToken ?? this.accessToken,
+      refreshToken: refreshToken ?? this.refreshToken,
+      expiresAt: expiresAt ?? this.expiresAt,
+      biometricEnabled: biometricEnabled ?? this.biometricEnabled,
+      pinEnabled: pinEnabled ?? this.pinEnabled,
+    );
+  }
 }

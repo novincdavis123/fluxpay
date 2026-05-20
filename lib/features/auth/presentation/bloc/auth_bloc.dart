@@ -1,4 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+import 'package:fluxpay/core/constants/hive_boxes.dart';
+
+import 'package:fluxpay/features/transactions/data/models/transaction_model.dart';
+import 'package:fluxpay/features/exchange/data/models/exchange_rate_model.dart';
+import 'package:fluxpay/features/beneficiaries/data/models/beneficiary_hive_model.dart';
 
 import '../../domain/entities/auth_session.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -13,6 +21,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LoginRequested>(_onLoginRequested);
 
     on<LogoutRequested>(_onLogoutRequested);
+
+    on<SessionExpiredLogoutRequested>(_onSessionExpiredLogoutRequested);
 
     on<CheckSessionRequested>(_onCheckSessionRequested);
 
@@ -47,33 +57,44 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     LoginRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(state.copyWith(status: AuthStatus.loading, clearError: true));
+    if (kDebugMode) {
+      debugPrint('================ LOGIN START ================');
+    }
 
     try {
-      await Future.delayed(const Duration(seconds: 2));
+      final biometricEnabled = await repository.isBiometricEnabled();
+
+      final pinEnabled = await repository.isPinEnabled();
 
       final session = AuthSession(
         accessToken: 'mock_access_token',
         refreshToken: 'mock_refresh_token',
         expiresAt: DateTime.now().add(const Duration(days: 7)),
-        biometricEnabled: false,
-        pinEnabled: false,
+        biometricEnabled: biometricEnabled,
+        pinEnabled: pinEnabled,
       );
 
       await repository.saveSession(session);
+
+      /// IMPORTANT:
+      /// DO NOT EMIT INITIAL STATE HERE
 
       emit(
         state.copyWith(
           status: AuthStatus.setupSecurity,
           session: session,
-          biometricEnabled: false,
-          pinEnabled: false,
+          biometricEnabled: biometricEnabled,
+          pinEnabled: pinEnabled,
           biometricValidated: false,
           pinValidated: false,
           appLocked: false,
           clearError: true,
         ),
       );
+
+      if (kDebugMode) {
+        debugPrint('LOGIN -> setupSecurity');
+      }
     } catch (e) {
       emit(
         state.copyWith(status: AuthStatus.failure, errorMessage: e.toString()),
@@ -89,28 +110,52 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     LogoutRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(state.copyWith(status: AuthStatus.loading));
-
     try {
+      emit(state.copyWith(status: AuthStatus.loading));
+
       await repository.clearSession();
 
-      emit(
-        state.copyWith(
-          status: AuthStatus.unauthenticated,
-          clearSession: true,
-          biometricEnabled: false,
-          pinEnabled: false,
-          biometricValidated: false,
-          pinValidated: false,
-          appLocked: false,
-          clearError: true,
-        ),
-      );
+      /// CLEAR TRANSACTIONS
+      if (Hive.isBoxOpen(HiveBoxes.transactions)) {
+        await Hive.box<TransactionModel>(HiveBoxes.transactions).clear();
+      }
+
+      /// CLEAR EXCHANGE
+      if (Hive.isBoxOpen(HiveBoxes.exchangeRates)) {
+        await Hive.box<ExchangeRateModel>(HiveBoxes.exchangeRates).clear();
+      }
+
+      /// CLEAR BENEFICIARIES
+      if (Hive.isBoxOpen(HiveBoxes.beneficiaries)) {
+        await Hive.box<BeneficiaryHiveModel>(HiveBoxes.beneficiaries).clear();
+      }
+
+      /// IMPORTANT:
+      /// SINGLE CLEAN RESET ONLY
+
+      emit(AuthState.initial().copyWith(status: AuthStatus.unauthenticated));
+
+      if (kDebugMode) {
+        debugPrint('LOGOUT -> unauthenticated');
+      }
     } catch (e) {
       emit(
         state.copyWith(status: AuthStatus.failure, errorMessage: e.toString()),
       );
     }
+  }
+
+  /// =====================================================
+  /// SESSION EXPIRED
+  /// =====================================================
+
+  Future<void> _onSessionExpiredLogoutRequested(
+    SessionExpiredLogoutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    await repository.clearSession();
+
+    emit(AuthState.initial().copyWith(status: AuthStatus.unauthenticated));
   }
 
   /// =====================================================
@@ -121,19 +166,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     CheckSessionRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(state.copyWith(status: AuthStatus.loading, clearError: true));
+    emit(state.copyWith(status: AuthStatus.loading));
 
     try {
       final hasSession = await repository.hasValidSession();
 
       if (!hasSession) {
-        emit(
-          state.copyWith(
-            status: AuthStatus.unauthenticated,
-            clearSession: true,
-            appLocked: false,
-          ),
-        );
+        emit(AuthState.initial().copyWith(status: AuthStatus.unauthenticated));
 
         return;
       }
@@ -141,19 +180,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final session = await repository.getSession();
 
       if (session == null) {
-        emit(
-          state.copyWith(
-            status: AuthStatus.unauthenticated,
-            clearSession: true,
-            appLocked: false,
-          ),
-        );
+        emit(AuthState.initial().copyWith(status: AuthStatus.unauthenticated));
 
         return;
       }
 
       /// =====================================================
-      /// BIOMETRIC REQUIRED
+      /// SECURITY FLOW
       /// =====================================================
 
       if (session.biometricEnabled) {
@@ -163,51 +196,34 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             session: session,
             biometricEnabled: true,
             pinEnabled: session.pinEnabled,
-            biometricValidated: false,
-            pinValidated: false,
             appLocked: true,
-            clearError: true,
           ),
         );
 
         return;
       }
-
-      /// =====================================================
-      /// PIN REQUIRED
-      /// =====================================================
 
       if (session.pinEnabled) {
         emit(
           state.copyWith(
             status: AuthStatus.pinRequired,
             session: session,
-            biometricEnabled: session.biometricEnabled,
             pinEnabled: true,
-            biometricValidated: false,
-            pinValidated: false,
+            biometricEnabled: session.biometricEnabled,
             appLocked: true,
-            clearError: true,
           ),
         );
 
         return;
       }
 
-      /// =====================================================
-      /// DIRECT AUTH
-      /// =====================================================
-
       emit(
         state.copyWith(
           status: AuthStatus.authenticated,
           session: session,
-          biometricEnabled: false,
-          pinEnabled: false,
           biometricValidated: true,
           pinValidated: true,
           appLocked: false,
-          clearError: true,
         ),
       );
     } catch (e) {
@@ -216,10 +232,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
     }
   }
-
-  /// =====================================================
-  /// ENABLE BIOMETRIC
-  /// =====================================================
 
   Future<void> _onEnableBiometricRequested(
     EnableBiometricRequested event,
@@ -228,31 +240,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       await repository.enableBiometric(event.biometricEnabled);
 
-      final currentSession = state.session;
-
-      if (currentSession == null) {
-        emit(state.copyWith(biometricEnabled: event.biometricEnabled));
-
-        return;
-      }
-
-      final updatedSession = AuthSession(
-        accessToken: currentSession.accessToken,
-        refreshToken: currentSession.refreshToken,
-        expiresAt: currentSession.expiresAt,
-        biometricEnabled: event.biometricEnabled,
-        pinEnabled: currentSession.pinEnabled,
-      );
-
-      await repository.saveSession(updatedSession);
-
-      emit(
-        state.copyWith(
-          session: updatedSession,
-          biometricEnabled: event.biometricEnabled,
-          clearError: true,
-        ),
-      );
+      emit(state.copyWith(biometricEnabled: event.biometricEnabled));
     } catch (e) {
       emit(
         state.copyWith(status: AuthStatus.failure, errorMessage: e.toString()),
@@ -260,15 +248,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  /// =====================================================
-  /// AUTHENTICATE BIOMETRIC
-  /// =====================================================
-
   Future<void> _onAuthenticateBiometricRequested(
     AuthenticateBiometricRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(state.copyWith(status: AuthStatus.loading, clearError: true));
+    emit(state.copyWith(status: AuthStatus.loading));
 
     try {
       final success = await repository.authenticateWithBiometric();
@@ -277,7 +261,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(
           state.copyWith(
             status: AuthStatus.failure,
-            biometricValidated: false,
             errorMessage: 'Biometric authentication failed',
           ),
         );
@@ -285,134 +268,37 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return;
       }
 
-      /// =====================================================
-      /// PIN REQUIRED AFTER BIOMETRIC
-      /// =====================================================
-
-      if (state.pinEnabled) {
-        emit(
-          state.copyWith(
-            status: AuthStatus.pinRequired,
-            biometricValidated: true,
-            appLocked: true,
-            clearError: true,
-          ),
-        );
-
-        return;
-      }
-
-      /// =====================================================
-      /// FULL AUTH
-      /// =====================================================
-
       emit(
         state.copyWith(
           status: AuthStatus.authenticated,
           biometricValidated: true,
           pinValidated: true,
           appLocked: false,
-          clearError: true,
         ),
       );
     } catch (e) {
       emit(
-        state.copyWith(
-          status: AuthStatus.failure,
-          biometricValidated: false,
-          errorMessage: e.toString(),
-        ),
+        state.copyWith(status: AuthStatus.failure, errorMessage: e.toString()),
       );
     }
   }
-
-  /// =====================================================
-  /// DISABLE BIOMETRIC
-  /// =====================================================
 
   Future<void> _onDisableBiometricRequested(
     DisableBiometricRequested event,
     Emitter<AuthState> emit,
   ) async {
-    try {
-      await repository.enableBiometric(false);
+    await repository.enableBiometric(false);
 
-      final currentSession = state.session;
-
-      if (currentSession == null) {
-        emit(
-          state.copyWith(biometricEnabled: false, biometricValidated: false),
-        );
-
-        return;
-      }
-
-      final updatedSession = AuthSession(
-        accessToken: currentSession.accessToken,
-        refreshToken: currentSession.refreshToken,
-        expiresAt: currentSession.expiresAt,
-        biometricEnabled: false,
-        pinEnabled: currentSession.pinEnabled,
-      );
-
-      await repository.saveSession(updatedSession);
-
-      emit(
-        state.copyWith(
-          session: updatedSession,
-          biometricEnabled: false,
-          biometricValidated: false,
-          clearError: true,
-        ),
-      );
-    } catch (e) {
-      emit(
-        state.copyWith(status: AuthStatus.failure, errorMessage: e.toString()),
-      );
-    }
+    emit(state.copyWith(biometricEnabled: false));
   }
-
-  /// =====================================================
-  /// ENABLE PIN
-  /// =====================================================
 
   Future<void> _onEnablePinRequested(
     EnablePinRequested event,
     Emitter<AuthState> emit,
   ) async {
-    try {
-      await repository.enablePin(event.enabled);
+    await repository.enablePin(event.enabled);
 
-      final currentSession = state.session;
-
-      if (currentSession == null) {
-        emit(state.copyWith(pinEnabled: event.enabled));
-
-        return;
-      }
-
-      final updatedSession = AuthSession(
-        accessToken: currentSession.accessToken,
-        refreshToken: currentSession.refreshToken,
-        expiresAt: currentSession.expiresAt,
-        biometricEnabled: currentSession.biometricEnabled,
-        pinEnabled: event.enabled,
-      );
-
-      await repository.saveSession(updatedSession);
-
-      emit(
-        state.copyWith(
-          session: updatedSession,
-          pinEnabled: event.enabled,
-          clearError: true,
-        ),
-      );
-    } catch (e) {
-      emit(
-        state.copyWith(status: AuthStatus.failure, errorMessage: e.toString()),
-      );
-    }
+    emit(state.copyWith(pinEnabled: event.enabled));
   }
 
   /// =====================================================
@@ -432,32 +318,30 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       final currentSession = state.session;
 
-      if (currentSession == null) {
+      if (currentSession != null) {
+        final updatedSession = currentSession.copyWith(
+          pinEnabled: true,
+          biometricEnabled: event.biometricEnabled,
+        );
+
+        await repository.saveSession(updatedSession);
+
+        emit(
+          state.copyWith(
+            session: updatedSession,
+            status: AuthStatus.authenticated,
+            pinEnabled: true,
+            biometricEnabled: event.biometricEnabled,
+            pinValidated: true,
+            biometricValidated: event.biometricEnabled,
+            appLocked: false,
+          ),
+        );
+
         return;
       }
 
-      final updatedSession = AuthSession(
-        accessToken: currentSession.accessToken,
-        refreshToken: currentSession.refreshToken,
-        expiresAt: currentSession.expiresAt,
-        biometricEnabled: event.biometricEnabled,
-        pinEnabled: true,
-      );
-
-      await repository.saveSession(updatedSession);
-
-      emit(
-        state.copyWith(
-          status: AuthStatus.authenticated,
-          session: updatedSession,
-          biometricEnabled: updatedSession.biometricEnabled,
-          pinEnabled: true,
-          pinValidated: true,
-          biometricValidated: event.biometricEnabled,
-          appLocked: false,
-          clearError: true,
-        ),
-      );
+      emit(state.copyWith(status: AuthStatus.authenticated));
     } catch (e) {
       emit(
         state.copyWith(status: AuthStatus.failure, errorMessage: e.toString()),
@@ -465,15 +349,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  /// =====================================================
-  /// VALIDATE PIN
-  /// =====================================================
-
   Future<void> _onValidatePinRequested(
     ValidatePinRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(state.copyWith(status: AuthStatus.loading, clearError: true));
+    emit(state.copyWith(status: AuthStatus.loading));
 
     try {
       final isValid = await repository.validatePin(event.pin);
@@ -482,7 +362,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(
           state.copyWith(
             status: AuthStatus.failure,
-            pinValidated: false,
             errorMessage: 'Invalid PIN',
           ),
         );
@@ -494,9 +373,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         state.copyWith(
           status: AuthStatus.authenticated,
           pinValidated: true,
-          biometricValidated: state.biometricEnabled,
+          biometricValidated: true,
           appLocked: false,
-          clearError: true,
         ),
       );
     } catch (e) {
@@ -506,38 +384,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  /// =====================================================
-  /// CLEAR SECURITY
-  /// =====================================================
-
   Future<void> _onClearSecurityRequested(
     ClearSecurityRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(
-      state.copyWith(
-        biometricValidated: false,
-        pinValidated: false,
-        clearError: true,
-      ),
-    );
+    emit(state.copyWith(biometricValidated: false, pinValidated: false));
   }
-
-  /// =====================================================
-  /// LOCK APP
-  /// =====================================================
 
   Future<void> _onLockAppRequested(
     LockAppRequested event,
     Emitter<AuthState> emit,
   ) async {
-    if (state.status == AuthStatus.unauthenticated) {
-      return;
-    }
+    if (state.status == AuthStatus.unauthenticated) return;
 
-    if (!state.hasSecurityEnabled) {
-      return;
-    }
+    if (!state.hasSecurityEnabled) return;
 
     emit(
       state.copyWith(
@@ -545,79 +405,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         appLocked: true,
         biometricValidated: false,
         pinValidated: false,
-        clearError: true,
       ),
     );
   }
-
-  /// =====================================================
-  /// UNLOCK APP
-  /// =====================================================
 
   Future<void> _onUnlockAppRequested(
     UnlockAppRequested event,
     Emitter<AuthState> emit,
   ) async {
-    final session = state.session;
-
-    if (session == null) {
-      emit(
-        state.copyWith(status: AuthStatus.unauthenticated, clearSession: true),
-      );
-
-      return;
-    }
-
-    /// =====================================================
-    /// BIOMETRIC REQUIRED
-    /// =====================================================
-
-    if (session.biometricEnabled) {
-      emit(
-        state.copyWith(
-          status: AuthStatus.biometricRequired,
-          appLocked: true,
-          biometricValidated: false,
-          pinValidated: false,
-          clearError: true,
-        ),
-      );
-
-      return;
-    }
-
-    /// =====================================================
-    /// PIN REQUIRED
-    /// =====================================================
-
-    if (session.pinEnabled) {
-      emit(
-        state.copyWith(
-          status: AuthStatus.pinRequired,
-          appLocked: true,
-          biometricValidated: false,
-          pinValidated: false,
-          clearError: true,
-        ),
-      );
-
-      return;
-    }
-
     emit(
       state.copyWith(
         status: AuthStatus.authenticated,
         appLocked: false,
         biometricValidated: true,
         pinValidated: true,
-        clearError: true,
       ),
     );
   }
-
-  /// =====================================================
-  /// FORCE AUTHENTICATED
-  /// =====================================================
 
   Future<void> _onMarkAuthenticatedRequested(
     MarkAuthenticatedRequested event,
@@ -629,14 +433,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         appLocked: false,
         biometricValidated: true,
         pinValidated: true,
-        clearError: true,
       ),
     );
   }
-
-  /// =====================================================
-  /// RESET AUTH ERROR
-  /// =====================================================
 
   Future<void> _onResetAuthErrorRequested(
     ResetAuthErrorRequested event,

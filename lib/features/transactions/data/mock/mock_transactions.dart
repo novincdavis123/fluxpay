@@ -1,145 +1,88 @@
-import 'package:fluxpay/features/transactions/data/models/transaction_model.dart';
+import 'dart:math';
 
+import 'package:fluxpay/features/transactions/data/models/transaction_model.dart';
 import 'package:fluxpay/features/transactions/domain/entities/transaction_status.dart';
 
-final mockTransactions = [
-  TransactionModel(
-    id: 'TXN001',
+List<TransactionModel> generateMockTransactions() {
+  final random = Random();
 
-    senderCurrency: 'USD',
+  final statuses = TransactionStatus.values;
 
-    receiverCurrency: 'INR',
+  final names = [
+    'John Smith',
+    'Emma Wilson',
+    'Michael Brown',
+    'Sophia Taylor',
+    'Daniel Johnson',
+    'Olivia Davis',
+    'James Miller',
+    'Ava Anderson',
+    'Noah Thomas',
+    'Isabella Jackson',
+  ];
 
-    senderAmount: 500,
+  final banks = [
+    'Chase Bank',
+    'HSBC',
+    'Citibank',
+    'Wells Fargo',
+    'Bank of America',
+    'Axis Bank',
+    'ICICI Bank',
+    'HDFC Bank',
+  ];
 
-    receiverAmount: 41700,
+  final currencies = ['USD', 'EUR', 'GBP', 'INR', 'AED'];
 
-    exchangeRate: 83.4,
+  return List.generate(1200, (index) {
+    final senderCurrency = currencies[random.nextInt(currencies.length)];
 
-    fee: 7.5,
+    String receiverCurrency = currencies[random.nextInt(currencies.length)];
 
-    totalPayable: 507.5,
+    while (receiverCurrency == senderCurrency) {
+      receiverCurrency = currencies[random.nextInt(currencies.length)];
+    }
 
-    beneficiaryName: 'Rahul Kumar',
+    final senderAmount = (random.nextDouble() * 5000) + 100;
 
-    beneficiaryBank: 'HDFC Bank',
+    final exchangeRate = (random.nextDouble() * 40) + 0.5;
 
-    createdAt: DateTime.now(),
+    final fee = (random.nextDouble() * 25) + 2;
 
-    status: TransactionStatus.completed,
+    final receiverAmount = senderAmount * exchangeRate;
 
-    maskedAccountNumber: 'XXXXXX1298',
-  ),
+    return TransactionModel(
+      id: 'TX-${100000 + index}',
 
-  TransactionModel(
-    id: 'TXN002',
+      beneficiaryName: names[random.nextInt(names.length)],
 
-    senderCurrency: 'EUR',
+      beneficiaryBank: banks[random.nextInt(banks.length)],
 
-    receiverCurrency: 'USD',
+      maskedAccountNumber: '****${1000 + random.nextInt(9000)}',
 
-    senderAmount: 320,
+      senderCurrency: senderCurrency,
 
-    receiverAmount: 346,
+      receiverCurrency: receiverCurrency,
 
-    exchangeRate: 1.08,
+      senderAmount: senderAmount,
 
-    fee: 4.5,
+      receiverAmount: receiverAmount,
 
-    totalPayable: 324.5,
+      exchangeRate: exchangeRate,
 
-    beneficiaryName: 'Alex Johnson',
+      fee: fee,
 
-    beneficiaryBank: 'Bank of America',
+      totalPayable: senderAmount + fee,
 
-    createdAt: DateTime.now().subtract(const Duration(hours: 5)),
+      status: statuses[random.nextInt(statuses.length)],
 
-    status: TransactionStatus.processing,
-
-    maskedAccountNumber: 'XXXXXX4421',
-  ),
-
-  TransactionModel(
-    id: 'TXN003',
-
-    senderCurrency: 'AED',
-
-    receiverCurrency: 'INR',
-
-    senderAmount: 1000,
-
-    receiverAmount: 22710,
-
-    exchangeRate: 22.71,
-
-    fee: 8,
-
-    totalPayable: 1008,
-
-    beneficiaryName: 'Arjun Nair',
-
-    beneficiaryBank: 'ICICI Bank',
-
-    createdAt: DateTime.now().subtract(const Duration(days: 1)),
-
-    status: TransactionStatus.pending,
-
-    maskedAccountNumber: 'XXXXXX8744',
-  ),
-
-  TransactionModel(
-    id: 'TXN004',
-
-    senderCurrency: 'GBP',
-
-    receiverCurrency: 'USD',
-
-    senderAmount: 250,
-
-    receiverAmount: 311,
-
-    exchangeRate: 1.24,
-
-    fee: 5,
-
-    totalPayable: 255,
-
-    beneficiaryName: 'Sophia Williams',
-
-    beneficiaryBank: 'Chase Bank',
-
-    createdAt: DateTime.now().subtract(const Duration(days: 2)),
-
-    status: TransactionStatus.failed,
-
-    maskedAccountNumber: 'XXXXXX9911',
-  ),
-
-  TransactionModel(
-    id: 'TXN005',
-
-    senderCurrency: 'USD',
-
-    receiverCurrency: 'PHP',
-
-    senderAmount: 700,
-
-    receiverAmount: 39200,
-
-    exchangeRate: 56.0,
-
-    fee: 9.5,
-
-    totalPayable: 709.5,
-
-    beneficiaryName: 'Maria Santos',
-
-    beneficiaryBank: 'BDO Unibank',
-
-    createdAt: DateTime.now().subtract(const Duration(days: 3)),
-
-    status: TransactionStatus.refunded,
-
-    maskedAccountNumber: 'XXXXXX7720',
-  ),
-];
+      createdAt: DateTime.now().subtract(
+        Duration(
+          days: random.nextInt(180),
+          hours: random.nextInt(24),
+          minutes: random.nextInt(60),
+        ),
+      ),
+    );
+  });
+}

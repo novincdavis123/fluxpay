@@ -52,23 +52,22 @@ class _SecuritySetupPageState extends State<SecuritySetupPage> {
 
     try {
       /// =====================================================
-      /// STEP 1 -> BIOMETRIC AUTH
+      /// SHOW BIOMETRIC POPUP
+      /// WITHOUT CHANGING AUTH STATE
       /// =====================================================
 
       if (_enableBiometric) {
-        authBloc.add(const AuthenticateBiometricRequested());
+        final success = await authBloc.repository.authenticateWithBiometric();
 
-        final biometricState = await authBloc.stream.firstWhere(
-          (state) =>
-              state.biometricValidated || state.status == AuthStatus.failure,
-        );
-
-        /// FAILED / CANCELLED
-        if (!biometricState.biometricValidated) {
+        if (!success) {
           if (mounted) {
             setState(() {
               _isSaving = false;
             });
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Biometric authentication failed')),
+            );
           }
 
           return;
@@ -80,7 +79,7 @@ class _SecuritySetupPageState extends State<SecuritySetupPage> {
       }
 
       /// =====================================================
-      /// STEP 2 -> SAVE PIN
+      /// SAVE PIN
       /// =====================================================
 
       if (_enablePin) {
@@ -93,12 +92,11 @@ class _SecuritySetupPageState extends State<SecuritySetupPage> {
       } else {
         authBloc.add(const EnablePinRequested(enabled: false));
 
-        /// NO PIN + NO BIOMETRIC
         authBloc.add(const MarkAuthenticatedRequested());
       }
 
       /// =====================================================
-      /// WAIT FOR FINAL AUTH STATE
+      /// WAIT FOR AUTH SUCCESS
       /// =====================================================
 
       await authBloc.stream.firstWhere(
@@ -114,11 +112,6 @@ class _SecuritySetupPageState extends State<SecuritySetupPage> {
       setState(() {
         _isSaving = false;
       });
-
-      /// =====================================================
-      /// ROUTER HANDLES NAVIGATION
-      /// DO NOT NAVIGATE MANUALLY
-      /// =====================================================
     } catch (e) {
       if (mounted) {
         setState(() {

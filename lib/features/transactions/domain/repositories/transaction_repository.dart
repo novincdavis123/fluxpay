@@ -1,7 +1,21 @@
-import 'package:fluxpay/features/transactions/data/models/transaction_model.dart';
+import 'package:fluxpay/features/transactions/domain/entities/transaction_entity.dart';
 
 abstract class TransactionRepository {
-  Future<void> saveTransactions(List<TransactionModel> transactions);
+  /// ======================================================
+  /// GET TRANSACTIONS
+  /// ======================================================
 
-  Future<List<TransactionModel>> getTransactions();
+  Future<List<TransactionEntity>> getTransactions();
+
+  /// ======================================================
+  /// SAVE TRANSACTIONS
+  /// ======================================================
+
+  Future<void> saveTransactions(List<TransactionEntity> transactions);
+
+  /// ======================================================
+  /// CLEAR TRANSACTIONS
+  /// ======================================================
+
+  Future<void> clearTransactions();
 }

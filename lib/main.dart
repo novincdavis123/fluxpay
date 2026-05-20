@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluxpay/features/auth/presentation/bloc/auth_event.dart';
 
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -16,7 +18,13 @@ import 'package:fluxpay/features/settings/data/models/settings_model.dart';
 
 import 'package:fluxpay/features/transactions/data/models/transaction_model.dart';
 
+import 'package:fluxpay/features/transactions/domain/entities/transaction_status.dart';
+
+import 'package:fluxpay/features/beneficiaries/data/models/beneficiary_hive_model.dart';
+
 import 'package:fluxpay/injection_container.dart';
+
+late final AppLifecycleHandler appLifecycleHandler;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,15 +58,24 @@ Future<void> main() async {
   /// ======================================================
 
   if (!Hive.isAdapterRegistered(0)) {
-    Hive.registerAdapter(TransactionModelAdapter());
+    Hive.registerAdapter(TransactionStatusAdapter());
   }
 
   if (!Hive.isAdapterRegistered(1)) {
-    Hive.registerAdapter(SettingsModelAdapter());
+    Hive.registerAdapter(TransactionModelAdapter());
   }
 
   if (!Hive.isAdapterRegistered(2)) {
+    Hive.registerAdapter(SettingsModelAdapter());
+  }
+
+  if (!Hive.isAdapterRegistered(3)) {
     Hive.registerAdapter(ExchangeRateModelAdapter());
+  }
+
+  /// BENEFICIARY HIVE MODEL ADAPTER
+  if (!Hive.isAdapterRegistered(4)) {
+    Hive.registerAdapter(BeneficiaryHiveModelAdapter());
   }
 
   /// ======================================================
@@ -66,7 +83,9 @@ Future<void> main() async {
   /// ======================================================
 
   await Future.wait([
-    Hive.openBox(HiveBoxes.beneficiaries),
+    /// FIXED
+    /// ALWAYS USE SAME TYPE EVERYWHERE
+    Hive.openBox<BeneficiaryHiveModel>(HiveBoxes.beneficiaries),
 
     Hive.openBox<TransactionModel>(HiveBoxes.transactions),
 
@@ -87,7 +106,9 @@ Future<void> main() async {
 
   final authBloc = sl<AuthBloc>();
 
-  WidgetsBinding.instance.addObserver(AppLifecycleHandler(authBloc: authBloc));
+  appLifecycleHandler = AppLifecycleHandler(authBloc: authBloc);
+
+  appLifecycleHandler.initialize();
 
   /// ======================================================
   /// RUN APP

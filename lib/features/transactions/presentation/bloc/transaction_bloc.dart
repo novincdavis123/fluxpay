@@ -29,33 +29,37 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
 
     on<CurrencyFilterChanged>(_onCurrencyFilterChanged);
 
+    on<AmountRangeFilterChanged>(_onAmountRangeFilterChanged);
+
+    on<ClearTransactionFilters>(_onClearTransactionFilters);
+
     on<LoadMoreTransactions>(_onLoadMoreTransactions);
   }
+
+  /// ======================================================
+  /// LOAD TRANSACTIONS
+  /// ======================================================
 
   Future<void> _onLoadTransactions(
     LoadTransactions event,
     Emitter<TransactionState> emit,
   ) async {
-    emit(state.copyWith(isLoading: true, errorMessage: null));
+    emit(state.copyWith(isLoading: true, clearError: true));
 
     try {
       final transactions = await repository.getTransactions();
+      print('TOTAL TX: ${transactions.length}');
 
-      final initialItems = transactions.take(pageSize).toList();
+      /// SORT ONLY ON INITIAL LOAD
+      final sortedTransactions = List<TransactionModel>.from(transactions)
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-      emit(
-        state.copyWith(
-          isLoading: false,
-
-          transactions: transactions,
-
-          filteredTransactions: initialItems,
-
-          hasReachedMax: transactions.length <= pageSize,
-
-          isPaginating: false,
-        ),
+      final updatedState = state.copyWith(
+        isLoading: false,
+        transactions: sortedTransactions,
       );
+
+      _applyFilters(emit, updatedState);
     } catch (e) {
       emit(
         state.copyWith(
@@ -67,18 +71,25 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     }
   }
 
+  /// ======================================================
+  /// ADD TRANSACTION
+  /// ======================================================
+
   Future<void> _onAddTransaction(
     AddTransaction event,
     Emitter<TransactionState> emit,
   ) async {
     try {
-      final updatedTransactions = [event.transaction, ...state.transactions];
+      final updatedTransactions = <TransactionModel>[
+        event.transaction,
+        ...state.transactions,
+      ];
 
       await repository.saveTransactions(updatedTransactions);
 
       final updatedState = state.copyWith(
         transactions: updatedTransactions,
-        errorMessage: null,
+        clearError: true,
       );
 
       _applyFilters(emit, updatedState);
@@ -87,14 +98,22 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     }
   }
 
+  /// ======================================================
+  /// SEARCH
+  /// ======================================================
+
   void _onSearchTransactions(
     SearchTransactions event,
     Emitter<TransactionState> emit,
   ) {
-    final updatedState = state.copyWith(searchQuery: event.query);
+    final updatedState = state.copyWith(searchQuery: event.query.trim());
 
     _applyFilters(emit, updatedState);
   }
+
+  /// ======================================================
+  /// STATUS FILTER
+  /// ======================================================
 
   void _onFilterTransactions(
     FilterTransactions event,
@@ -105,6 +124,10 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     _applyFilters(emit, updatedState);
   }
 
+  /// ======================================================
+  /// CURRENCY FILTER
+  /// ======================================================
+
   void _onCurrencyFilterChanged(
     CurrencyFilterChanged event,
     Emitter<TransactionState> emit,
@@ -114,75 +137,170 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     _applyFilters(emit, updatedState);
   }
 
+  /// ======================================================
+  /// AMOUNT RANGE FILTER
+  /// ======================================================
+
+  void _onAmountRangeFilterChanged(
+    AmountRangeFilterChanged event,
+    Emitter<TransactionState> emit,
+  ) {
+    final updatedState = state.copyWith(
+      minAmount: event.minAmount,
+      maxAmount: event.maxAmount,
+    );
+
+    _applyFilters(emit, updatedState);
+  }
+
+  /// ======================================================
+  /// CLEAR FILTERS
+  /// ======================================================
+
+  void _onClearTransactionFilters(
+    ClearTransactionFilters event,
+    Emitter<TransactionState> emit,
+  ) {
+    final updatedState = state.copyWith(
+      searchQuery: '',
+      filter: TransactionFilter.all,
+      selectedCurrency: null,
+      minAmount: null,
+      maxAmount: null,
+      clearCurrency: true,
+      clearError: true,
+    );
+
+    _applyFilters(emit, updatedState);
+  }
+
+  /// ======================================================
+  /// APPLY FILTERS
+  /// ======================================================
+
   void _applyFilters(
     Emitter<TransactionState> emit,
     TransactionState currentState,
   ) {
-    List<TransactionModel> filtered = List.from(currentState.transactions);
+    final filtered = _filterTransactions(
+      transactions: currentState.transactions,
+      currentState: currentState,
+    );
 
+    final paginatedItems = filtered.take(pageSize).toList(growable: false);
+
+    emit(
+      currentState.copyWith(
+        filteredTransactions: paginatedItems,
+        hasReachedMax: filtered.length <= pageSize,
+        isPaginating: false,
+      ),
+    );
+  }
+
+  /// ======================================================
+  /// FILTER LOGIC
+  /// ======================================================
+
+  List<TransactionModel> _filterTransactions({
+    required List<TransactionModel> transactions,
+    required TransactionState currentState,
+  }) {
+    Iterable<TransactionModel> filtered = transactions;
+
+    /// ======================================================
     /// STATUS FILTER
+    /// ======================================================
+
     switch (currentState.filter) {
       case TransactionFilter.completed:
-        filtered = filtered.where((tx) {
-          return tx.status == TransactionStatus.completed;
-        }).toList();
+        filtered = filtered.where(
+          (tx) => tx.status == TransactionStatus.completed,
+        );
         break;
 
       case TransactionFilter.pending:
-        filtered = filtered.where((tx) {
-          return tx.status == TransactionStatus.pending;
-        }).toList();
+        filtered = filtered.where(
+          (tx) => tx.status == TransactionStatus.pending,
+        );
         break;
 
       case TransactionFilter.processing:
-        filtered = filtered.where((tx) {
-          return tx.status == TransactionStatus.processing;
-        }).toList();
+        filtered = filtered.where(
+          (tx) => tx.status == TransactionStatus.processing,
+        );
         break;
 
       case TransactionFilter.failed:
-        filtered = filtered.where((tx) {
-          return tx.status == TransactionStatus.failed;
-        }).toList();
+        filtered = filtered.where(
+          (tx) => tx.status == TransactionStatus.failed,
+        );
+        break;
+
+      case TransactionFilter.refunded:
+        filtered = filtered.where(
+          (tx) => tx.status == TransactionStatus.refunded,
+        );
         break;
 
       case TransactionFilter.all:
         break;
     }
 
+    /// ======================================================
     /// SEARCH FILTER
-    if (currentState.searchQuery.isNotEmpty) {
-      filtered = filtered.where((tx) {
-        final query = currentState.searchQuery.toLowerCase();
+    /// ======================================================
 
+    if (currentState.searchQuery.isNotEmpty) {
+      final query = currentState.searchQuery.toLowerCase();
+
+      filtered = filtered.where((tx) {
         return tx.beneficiaryName.toLowerCase().contains(query) ||
             tx.beneficiaryBank.toLowerCase().contains(query) ||
             tx.senderCurrency.toLowerCase().contains(query) ||
             tx.receiverCurrency.toLowerCase().contains(query) ||
             tx.id.toLowerCase().contains(query);
-      }).toList();
+      });
     }
 
+    /// ======================================================
     /// CURRENCY FILTER
-    if (currentState.selectedCurrency != null) {
+    /// ======================================================
+
+    if (currentState.selectedCurrency != null &&
+        currentState.selectedCurrency!.isNotEmpty) {
       filtered = filtered.where((tx) {
         return tx.senderCurrency == currentState.selectedCurrency ||
             tx.receiverCurrency == currentState.selectedCurrency;
-      }).toList();
+      });
     }
 
-    final paginatedItems = filtered.take(pageSize).toList();
+    /// ======================================================
+    /// MIN AMOUNT
+    /// ======================================================
 
-    emit(
-      currentState.copyWith(
-        filteredTransactions: paginatedItems,
+    if (currentState.minAmount != null) {
+      filtered = filtered.where(
+        (tx) => tx.senderAmount >= currentState.minAmount!,
+      );
+    }
 
-        hasReachedMax: filtered.length <= pageSize,
+    /// ======================================================
+    /// MAX AMOUNT
+    /// ======================================================
 
-        isPaginating: false,
-      ),
-    );
+    if (currentState.maxAmount != null) {
+      filtered = filtered.where(
+        (tx) => tx.senderAmount <= currentState.maxAmount!,
+      );
+    }
+
+    return filtered.toList(growable: false);
   }
+
+  /// ======================================================
+  /// PAGINATION
+  /// ======================================================
 
   Future<void> _onLoadMoreTransactions(
     LoadMoreTransactions event,
@@ -194,61 +312,27 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
 
     emit(state.copyWith(isPaginating: true));
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    final filtered = _filterTransactions(
+      transactions: state.transactions,
+      currentState: state,
+    );
 
     final currentLength = state.filteredTransactions.length;
 
-    List<TransactionModel> filtered = List.from(state.transactions);
+    final nextItems = filtered
+        .skip(currentLength)
+        .take(pageSize)
+        .toList(growable: false);
 
-    /// APPLY ACTIVE FILTERS
-    switch (state.filter) {
-      case TransactionFilter.completed:
-        filtered = filtered.where((tx) {
-          return tx.status == TransactionStatus.completed;
-        }).toList();
-        break;
-
-      case TransactionFilter.pending:
-        filtered = filtered.where((tx) {
-          return tx.status == TransactionStatus.pending;
-        }).toList();
-        break;
-
-      case TransactionFilter.processing:
-        filtered = filtered.where((tx) {
-          return tx.status == TransactionStatus.processing;
-        }).toList();
-        break;
-
-      case TransactionFilter.failed:
-        filtered = filtered.where((tx) {
-          return tx.status == TransactionStatus.failed;
-        }).toList();
-        break;
-
-      case TransactionFilter.all:
-        break;
-    }
-
-    if (state.searchQuery.isNotEmpty) {
-      filtered = filtered.where((tx) {
-        final query = state.searchQuery.toLowerCase();
-
-        return tx.beneficiaryName.toLowerCase().contains(query) ||
-            tx.id.toLowerCase().contains(query);
-      }).toList();
-    }
-
-    final nextItems = filtered.skip(currentLength).take(pageSize).toList();
-
-    final updatedList = [...state.filteredTransactions, ...nextItems];
+    final updatedList = <TransactionModel>[
+      ...state.filteredTransactions,
+      ...nextItems,
+    ];
 
     emit(
       state.copyWith(
         filteredTransactions: updatedList,
-
         hasReachedMax: updatedList.length >= filtered.length,
-
         isPaginating: false,
       ),
     );

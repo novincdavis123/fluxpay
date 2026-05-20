@@ -4,6 +4,10 @@ import '../../domain/entities/auth_session.dart';
 
 enum AuthStatus {
   initial,
+
+  /// =====================================================
+  /// APP STARTUP LOADING ONLY
+  /// =====================================================
   loading,
 
   /// =====================================================
@@ -25,6 +29,11 @@ enum AuthStatus {
   locked,
 
   /// =====================================================
+  /// SESSION
+  /// =====================================================
+  sessionExpired,
+
+  /// =====================================================
   /// ERROR
   /// =====================================================
   failure,
@@ -36,6 +45,15 @@ class AuthState extends Equatable {
   final AuthSession? session;
 
   final String? errorMessage;
+
+  /// =====================================================
+  /// UI LOADING
+  /// IMPORTANT:
+  /// THIS IS FOR LOGIN BUTTON LOADING
+  /// NOT ROUTER LOADING
+  /// =====================================================
+
+  final bool isSubmitting;
 
   /// =====================================================
   /// SECURITY FLAGS
@@ -55,15 +73,23 @@ class AuthState extends Equatable {
 
   final bool appLocked;
 
+  /// =====================================================
+  /// SESSION EXPIRED FLAG
+  /// =====================================================
+
+  final bool sessionExpired;
+
   const AuthState({
     this.status = AuthStatus.initial,
     this.session,
     this.errorMessage,
+    this.isSubmitting = false,
     this.biometricEnabled = false,
     this.pinEnabled = false,
     this.pinValidated = false,
     this.biometricValidated = false,
     this.appLocked = false,
+    this.sessionExpired = false,
   });
 
   /// =====================================================
@@ -74,11 +100,13 @@ class AuthState extends Equatable {
     AuthStatus? status,
     AuthSession? session,
     String? errorMessage,
+    bool? isSubmitting,
     bool? biometricEnabled,
     bool? pinEnabled,
     bool? pinValidated,
     bool? biometricValidated,
     bool? appLocked,
+    bool? sessionExpired,
     bool clearSession = false,
     bool clearError = false,
   }) {
@@ -89,6 +117,8 @@ class AuthState extends Equatable {
 
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
 
+      isSubmitting: isSubmitting ?? this.isSubmitting,
+
       biometricEnabled: biometricEnabled ?? this.biometricEnabled,
 
       pinEnabled: pinEnabled ?? this.pinEnabled,
@@ -98,6 +128,8 @@ class AuthState extends Equatable {
       biometricValidated: biometricValidated ?? this.biometricValidated,
 
       appLocked: appLocked ?? this.appLocked,
+
+      sessionExpired: sessionExpired ?? this.sessionExpired,
     );
   }
 
@@ -110,6 +142,10 @@ class AuthState extends Equatable {
   bool get isLoading => status == AuthStatus.loading;
 
   bool get hasError => status == AuthStatus.failure;
+
+  /// =====================================================
+  /// AUTH HELPERS
+  /// =====================================================
 
   bool get isAuthenticated => status == AuthStatus.authenticated;
 
@@ -129,7 +165,25 @@ class AuthState extends Equatable {
 
   bool get requiresSecuritySetup => status == AuthStatus.setupSecurity;
 
-  bool get securityValidated => pinValidated || biometricValidated;
+  /// =====================================================
+  /// SECURITY VALIDATION
+  /// =====================================================
+
+  bool get securityValidated {
+    if (!hasSecurityEnabled) {
+      return true;
+    }
+
+    if (pinEnabled && !pinValidated) {
+      return false;
+    }
+
+    if (biometricEnabled && !biometricValidated) {
+      return false;
+    }
+
+    return true;
+  }
 
   /// =====================================================
   /// LOCK HELPERS
@@ -141,13 +195,21 @@ class AuthState extends Equatable {
       hasSecurityEnabled && (isLocked || requiresPin || requiresBiometric);
 
   /// =====================================================
+  /// SESSION HELPERS
+  /// =====================================================
+
+  bool get isSessionExpired =>
+      status == AuthStatus.sessionExpired || sessionExpired;
+
+  /// =====================================================
   /// ACCESS CONTROL
   /// =====================================================
 
   bool get canAccessApp =>
-      isAuthenticated &&
+      status == AuthStatus.authenticated &&
       !isLocked &&
-      (securityValidated || !hasSecurityEnabled);
+      !isSessionExpired &&
+      securityValidated;
 
   /// =====================================================
   /// INITIAL FACTORY
@@ -156,11 +218,13 @@ class AuthState extends Equatable {
   factory AuthState.initial() {
     return const AuthState(
       status: AuthStatus.initial,
+      isSubmitting: false,
       biometricEnabled: false,
       pinEnabled: false,
       pinValidated: false,
       biometricValidated: false,
       appLocked: false,
+      sessionExpired: false,
     );
   }
 
@@ -169,10 +233,12 @@ class AuthState extends Equatable {
     status,
     session,
     errorMessage,
+    isSubmitting,
     biometricEnabled,
     pinEnabled,
     pinValidated,
     biometricValidated,
     appLocked,
+    sessionExpired,
   ];
 }

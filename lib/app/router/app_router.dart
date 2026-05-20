@@ -17,58 +17,39 @@ class AppRouter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>(
-      buildWhen: (previous, current) {
-        /// DON'T REBUILD ROUTER DURING LOGIN LOADING
-        if (current.status == AuthStatus.loading && previous.session == null) {
-          return false;
+    return BlocSelector<AuthBloc, AuthState, AuthStatus>(
+      selector: (state) => state.status,
+
+      builder: (context, status) {
+        debugPrint('''
+================ APP ROUTER ================
+STATUS => $status
+============================================
+''');
+
+        switch (status) {
+          case AuthStatus.initial:
+            return const SplashPage();
+
+          case AuthStatus.loading:
+            return const SplashPage();
+
+          case AuthStatus.setupSecurity:
+            return const SecuritySetupPage();
+
+          case AuthStatus.authenticated:
+            return const HomePage();
+
+          case AuthStatus.locked:
+          case AuthStatus.pinRequired:
+          case AuthStatus.biometricRequired:
+            return const LockScreenPage();
+
+          case AuthStatus.failure:
+          case AuthStatus.unauthenticated:
+          default:
+            return const LoginPage();
         }
-
-        return previous.status != current.status ||
-            previous.appLocked != current.appLocked;
-      },
-
-      builder: (context, state) {
-        /// =====================================================
-        /// INITIAL APP BOOT ONLY
-        /// =====================================================
-
-        if (state.status == AuthStatus.initial) {
-          return const SplashPage();
-        }
-
-        /// =====================================================
-        /// LOCK SCREEN
-        /// =====================================================
-
-        if (state.shouldShowLockScreen ||
-            state.status == AuthStatus.locked ||
-            state.status == AuthStatus.pinRequired ||
-            state.status == AuthStatus.biometricRequired) {
-          return const LockScreenPage();
-        }
-
-        /// =====================================================
-        /// SECURITY SETUP
-        /// =====================================================
-
-        if (state.status == AuthStatus.setupSecurity) {
-          return const SecuritySetupPage();
-        }
-
-        /// =====================================================
-        /// AUTHENTICATED
-        /// =====================================================
-
-        if (state.isAuthenticated && state.canAccessApp) {
-          return const HomePage();
-        }
-
-        /// =====================================================
-        /// LOGIN
-        /// =====================================================
-
-        return const LoginPage();
       },
     );
   }

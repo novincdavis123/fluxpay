@@ -14,20 +14,19 @@ abstract class TransactionLocalDataSource {
 }
 
 class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
-  static const String _transactionsKey = 'transactions';
-
   static const String _boxName = StorageConstants.transactionsBox;
 
   /// ======================================================
-  /// OPEN BOX SAFELY
+  /// SAFE BOX ACCESS
+  /// BOX MUST ALREADY BE OPENED IN MAIN.DART
   /// ======================================================
 
-  Future<Box<TransactionModel>> _openBox() async {
-    if (Hive.isBoxOpen(_boxName)) {
-      return Hive.box<TransactionModel>(_boxName);
+  Box<TransactionModel> get _box {
+    if (!Hive.isBoxOpen(_boxName)) {
+      throw Exception('$_boxName is not opened. Open it in main.dart');
     }
 
-    return await Hive.openBox<TransactionModel>(_boxName);
+    return Hive.box<TransactionModel>(_boxName);
   }
 
   /// ======================================================
@@ -37,20 +36,24 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
   @override
   Future<void> cacheTransactions(List<TransactionModel> transactions) async {
     try {
-      final box = await _openBox();
+      final box = _box;
 
       await box.clear();
 
-      for (final transaction in transactions) {
-        await box.put(transaction.id, transaction);
-      }
+      final Map<dynamic, TransactionModel> mapped = {
+        for (final transaction in transactions) transaction.id: transaction,
+      };
+
+      await box.putAll(mapped);
 
       if (kDebugMode) {
         debugPrint('✅ Transactions cached successfully');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (kDebugMode) {
         debugPrint('❌ Failed to cache transactions: $e');
+
+        debugPrintStack(stackTrace: stackTrace);
       }
 
       rethrow;
@@ -64,9 +67,7 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
   @override
   Future<List<TransactionModel>> getTransactions() async {
     try {
-      final box = await _openBox();
-
-      final transactions = box.values.toList();
+      final transactions = _box.values.toList();
 
       transactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
@@ -75,9 +76,11 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
       }
 
       return transactions;
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (kDebugMode) {
         debugPrint('❌ Failed to load transactions: $e');
+
+        debugPrintStack(stackTrace: stackTrace);
       }
 
       return [];
@@ -91,16 +94,16 @@ class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
   @override
   Future<void> clearTransactions() async {
     try {
-      final box = await _openBox();
-
-      await box.clear();
+      await _box.clear();
 
       if (kDebugMode) {
         debugPrint('🗑️ Transactions cleared');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (kDebugMode) {
         debugPrint('❌ Failed to clear transactions: $e');
+
+        debugPrintStack(stackTrace: stackTrace);
       }
     }
   }

@@ -2,6 +2,8 @@ import 'package:hive/hive.dart';
 
 import 'package:fluxpay/features/transactions/domain/entities/transaction_entity.dart';
 
+/// IMPORTANT:
+/// USE THE DOMAIN ENUM ONLY
 import 'package:fluxpay/features/transactions/domain/entities/transaction_status.dart';
 
 part 'transaction_model.g.dart';
@@ -52,6 +54,8 @@ class TransactionModel extends TransactionEntity {
   @override
   final DateTime createdAt;
 
+  /// IMPORTANT:
+  /// This now uses the DOMAIN enum
   @HiveField(11)
   @override
   final TransactionStatus status;
@@ -92,21 +96,21 @@ class TransactionModel extends TransactionEntity {
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
     return TransactionModel(
-      id: json['id'],
-      senderCurrency: json['senderCurrency'],
-      receiverCurrency: json['receiverCurrency'],
+      id: json['id'] as String,
+      senderCurrency: json['senderCurrency'] as String,
+      receiverCurrency: json['receiverCurrency'] as String,
       senderAmount: (json['senderAmount'] as num).toDouble(),
       receiverAmount: (json['receiverAmount'] as num).toDouble(),
       exchangeRate: (json['exchangeRate'] as num).toDouble(),
       fee: (json['fee'] as num).toDouble(),
       totalPayable: (json['totalPayable'] as num).toDouble(),
-      beneficiaryName: json['beneficiaryName'],
-      beneficiaryBank: json['beneficiaryBank'],
-      createdAt: DateTime.parse(json['createdAt']),
+      beneficiaryName: json['beneficiaryName'] as String,
+      beneficiaryBank: json['beneficiaryBank'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
       status: TransactionStatus.values.firstWhere(
         (e) => e.name == json['status'],
       ),
-      maskedAccountNumber: json['maskedAccountNumber'],
+      maskedAccountNumber: json['maskedAccountNumber'] as String,
     );
   }
 

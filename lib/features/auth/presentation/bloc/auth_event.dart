@@ -24,10 +24,21 @@ class LoginRequested extends AuthEvent {
 
   final String password;
 
-  const LoginRequested({required this.email, required this.password});
+  /// =====================================================
+  /// IMPORTANT
+  /// USED TO DETECT MANUAL LOGOUT LOGIN
+  /// =====================================================
+
+  final bool forceSecuritySetup;
+
+  const LoginRequested({
+    required this.email,
+    required this.password,
+    this.forceSecuritySetup = false,
+  });
 
   @override
-  List<Object?> get props => [email, password];
+  List<Object?> get props => [email, password, forceSecuritySetup];
 }
 
 /// =====================================================
@@ -36,6 +47,15 @@ class LoginRequested extends AuthEvent {
 
 class LogoutRequested extends AuthEvent {
   const LogoutRequested();
+}
+
+/// =====================================================
+/// SESSION EXPIRED LOGOUT
+/// AUTO LOGOUT AFTER INACTIVITY
+/// =====================================================
+
+class SessionExpiredLogoutRequested extends AuthEvent {
+  const SessionExpiredLogoutRequested();
 }
 
 /// =====================================================
@@ -118,7 +138,7 @@ class ClearSecurityRequested extends AuthEvent {
 
 /// =====================================================
 /// LOCK APP
-/// Triggered when app enters background/inactive
+/// Triggered after inactivity
 /// =====================================================
 
 class LockAppRequested extends AuthEvent {
@@ -127,7 +147,7 @@ class LockAppRequested extends AuthEvent {
 
 /// =====================================================
 /// UNLOCK APP
-/// Triggered after successful lockscreen auth
+/// Triggered after successful auth
 /// =====================================================
 
 class UnlockAppRequested extends AuthEvent {
@@ -136,7 +156,6 @@ class UnlockAppRequested extends AuthEvent {
 
 /// =====================================================
 /// FORCE AUTHENTICATED
-/// Used after lockscreen validation success
 /// =====================================================
 
 class MarkAuthenticatedRequested extends AuthEvent {

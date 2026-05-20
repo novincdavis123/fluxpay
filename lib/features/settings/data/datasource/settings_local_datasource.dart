@@ -13,16 +13,21 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
 
   static const String settingsKey = 'settings';
 
+  /// =====================================================
+  /// GET BOX
+  /// BOX IS ALREADY OPENED IN MAIN
+  /// =====================================================
+
+  Box<SettingsModel> get _box => Hive.box<SettingsModel>(boxName);
+
   @override
   Future<SettingsModel> getSettings() async {
-    final box = await Hive.openBox<SettingsModel>(boxName);
-
-    final settings = box.get(settingsKey);
+    final settings = _box.get(settingsKey);
 
     if (settings == null) {
       final initial = SettingsModel.initial();
 
-      await box.put(settingsKey, initial);
+      await _box.put(settingsKey, initial);
 
       return initial;
     }
@@ -32,8 +37,6 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
 
   @override
   Future<void> saveSettings(SettingsModel settings) async {
-    final box = await Hive.openBox<SettingsModel>(boxName);
-
-    await box.put(settingsKey, settings);
+    await _box.put(settingsKey, settings);
   }
 }

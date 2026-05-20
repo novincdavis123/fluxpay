@@ -23,6 +23,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
 
   bool _obscurePassword = true;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -33,12 +34,16 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     FocusScope.of(context).unfocus();
 
     if (!_formKey.currentState!.validate()) {
       return;
     }
+
+    setState(() {
+      _isSubmitting = true;
+    });
 
     context.read<AuthBloc>().add(
       LoginRequested(
@@ -50,18 +55,17 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AuthBloc, AuthState>(
+    return BlocListener<AuthBloc, AuthState>(
+      listenWhen: (previous, current) => previous.status != current.status,
+
       listener: (context, state) {
         debugPrint('''
-LOGIN PAGE =>
-status: ${state.status}
-session: ${state.session != null}
+================ LOGIN PAGE ================
+STATUS => ${state.status}
+============================================
 ''');
 
-        /// =====================================================
-        /// FAILURE
-        /// =====================================================
-
+        /// ONLY SHOW FAILURE
         if (state.status == AuthStatus.failure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -72,276 +76,247 @@ session: ${state.session != null}
         }
       },
 
-      builder: (context, state) {
-        final isLoading =
-            state.status == AuthStatus.loading && state.session == null;
+      child: Scaffold(
+        backgroundColor: AppColors.getBackground(context),
 
-        return Scaffold(
-          backgroundColor: AppColors.getBackground(context),
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
 
-          body: SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 24,
-                ),
+              child: Form(
+                key: _formKey,
 
-                child: Form(
-                  key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
 
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// =====================================================
+                    /// LOGO
+                    /// =====================================================
+                    Center(
+                      child: Container(
+                        width: 110,
+                        height: 110,
 
-                    children: [
-                      /// =====================================================
-                      /// LOGO
-                      /// =====================================================
-                      Center(
-                        child: Container(
-                          width: 110,
-                          height: 110,
+                        padding: const EdgeInsets.all(16),
 
-                          padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
 
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
 
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-
-                              colors: [
-                                AppColors.primary.withOpacity(0.18),
-                                AppColors.primary.withOpacity(0.06),
-                              ],
-                            ),
-
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primary.withOpacity(0.18),
-                                blurRadius: 40,
-                                spreadRadius: 2,
-                              ),
+                            colors: [
+                              AppColors.primary.withOpacity(0.18),
+                              AppColors.primary.withOpacity(0.06),
                             ],
                           ),
 
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(32),
-
-                            child: Image.asset(
-                              'assets/icons/fxicon.png',
-                              fit: BoxFit.cover,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.18),
+                              blurRadius: 40,
+                              spreadRadius: 2,
                             ),
+                          ],
+                        ),
+
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(32),
+
+                          child: Image.asset(
+                            'assets/icons/fxicon.png',
+                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
+                    ),
 
-                      const SizedBox(height: 42),
+                    const SizedBox(height: 42),
 
-                      /// =====================================================
-                      /// TITLE
-                      /// =====================================================
-                      Text(
-                        'Welcome Back',
-                        style: AppTextStyles.displayMedium.copyWith(
-                          letterSpacing: -1,
+                    /// =====================================================
+                    /// TITLE
+                    /// =====================================================
+                    Text(
+                      'Welcome Back',
+                      style: AppTextStyles.displayMedium.copyWith(
+                        letterSpacing: -1,
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    Text(
+                      'Sign in to continue using FluxPay',
+                      style: AppTextStyles.bodyMedium,
+                    ),
+
+                    const SizedBox(height: 42),
+
+                    /// =====================================================
+                    /// EMAIL
+                    /// =====================================================
+                    Text('Email', style: AppTextStyles.bodyMedium),
+
+                    const SizedBox(height: 12),
+
+                    TextFormField(
+                      controller: _emailController,
+
+                      keyboardType: TextInputType.emailAddress,
+
+                      decoration: InputDecoration(
+                        hintText: 'john@fluxpay.com',
+
+                        filled: true,
+
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          borderSide: BorderSide.none,
                         ),
+
+                        prefixIcon: const Icon(Icons.mail_outline_rounded),
                       ),
 
-                      const SizedBox(height: 10),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Email is required';
+                        }
 
-                      Text(
-                        'Sign in to continue using FluxPay',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: Colors.white70,
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    /// =====================================================
+                    /// PASSWORD
+                    /// =====================================================
+                    Text('Password', style: AppTextStyles.bodyMedium),
+
+                    const SizedBox(height: 12),
+
+                    TextFormField(
+                      controller: _passwordController,
+
+                      obscureText: _obscurePassword,
+
+                      decoration: InputDecoration(
+                        hintText: 'Enter password',
+
+                        filled: true,
+
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          borderSide: BorderSide.none,
                         ),
-                      ),
 
-                      const SizedBox(height: 42),
+                        prefixIcon: const Icon(Icons.lock_outline_rounded),
 
-                      /// =====================================================
-                      /// EMAIL
-                      /// =====================================================
-                      Text('Email', style: AppTextStyles.bodyMedium),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
 
-                      const SizedBox(height: 12),
-
-                      TextFormField(
-                        controller: _emailController,
-
-                        keyboardType: TextInputType.emailAddress,
-
-                        style: const TextStyle(color: Colors.white),
-
-                        decoration: InputDecoration(
-                          hintText: 'john@fluxpay.com',
-
-                          hintStyle: const TextStyle(color: Colors.white38),
-
-                          filled: true,
-
-                          fillColor: Colors.white.withOpacity(0.04),
-
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(18),
-                            borderSide: BorderSide.none,
-                          ),
-
-                          prefixIcon: const Icon(
-                            Icons.mail_outline_rounded,
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off_rounded
+                                : Icons.visibility_rounded,
                             color: Colors.white54,
                           ),
                         ),
-
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Email is required';
-                          }
-
-                          return null;
-                        },
                       ),
 
-                      const SizedBox(height: 24),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Password is required';
+                        }
 
-                      /// =====================================================
-                      /// PASSWORD
-                      /// =====================================================
-                      Text('Password', style: AppTextStyles.bodyMedium),
+                        if (value.length < 6) {
+                          return 'Minimum 6 characters';
+                        }
 
-                      const SizedBox(height: 12),
+                        return null;
+                      },
+                    ),
 
-                      TextFormField(
-                        controller: _passwordController,
+                    const SizedBox(height: 36),
 
-                        obscureText: _obscurePassword,
+                    /// =====================================================
+                    /// LOGIN BUTTON
+                    /// IMPORTANT FIX:
+                    /// ONLY REBUILD BUTTON
+                    /// NOT ENTIRE PAGE
+                    /// =====================================================
+                    BlocSelector<AuthBloc, AuthState, bool>(
+                      selector: (state) => state.status == AuthStatus.loading,
 
-                        style: const TextStyle(color: Colors.white),
+                      builder: (context, isLoading) {
+                        return SizedBox(
+                          width: double.infinity,
+                          height: 58,
 
-                        decoration: InputDecoration(
-                          hintText: 'Enter password',
+                          child: ElevatedButton(
+                            onPressed: isLoading ? null : _submit,
 
-                          hintStyle: const TextStyle(color: Colors.white38),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
 
-                          filled: true,
-
-                          fillColor: Colors.white.withOpacity(0.04),
-
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(18),
-                            borderSide: BorderSide.none,
-                          ),
-
-                          prefixIcon: const Icon(
-                            Icons.lock_outline_rounded,
-                            color: Colors.white54,
-                          ),
-
-                          suffixIcon: IconButton(
-                            onPressed: () {
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
-                            },
-
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off_rounded
-                                  : Icons.visibility_rounded,
-                              color: Colors.white54,
-                            ),
-                          ),
-                        ),
-
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Password is required';
-                          }
-
-                          if (value.length < 6) {
-                            return 'Minimum 6 characters';
-                          }
-
-                          return null;
-                        },
-                      ),
-
-                      const SizedBox(height: 36),
-
-                      /// =====================================================
-                      /// LOGIN BUTTON
-                      /// =====================================================
-                      BlocSelector<AuthBloc, AuthState, bool>(
-                        selector: (state) =>
-                            state.status == AuthStatus.loading &&
-                            state.session == null,
-
-                        builder: (context, isLoading) {
-                          return SizedBox(
-                            width: double.infinity,
-                            height: 58,
-
-                            child: ElevatedButton(
-                              onPressed: isLoading ? null : _submit,
-
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
                               ),
+                            ),
 
-                              child: AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 200),
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 200),
 
-                                child: isLoading
-                                    ? const SizedBox(
-                                        key: ValueKey('loader'),
-                                        width: 22,
-                                        height: 22,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2.2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Text(
-                                        'Continue',
-                                        key: const ValueKey('text'),
-                                        style: AppTextStyles.bodyLarge.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                        ),
+                              child: isLoading
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.2,
+                                        color: Colors.white,
                                       ),
-                              ),
+                                    )
+                                  : Text(
+                                      'Continue',
+                                      style: AppTextStyles.bodyLarge.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                             ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 28),
-
-                      /// =====================================================
-                      /// FOOTER
-                      /// =====================================================
-                      Center(
-                        child: Text(
-                          'Secure fintech authentication',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: Colors.white38,
                           ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 28),
+
+                    /// =====================================================
+                    /// FOOTER
+                    /// =====================================================
+                    Center(
+                      child: Text(
+                        'Secure fintech authentication',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: Colors.white38,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

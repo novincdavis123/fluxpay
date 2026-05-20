@@ -6,6 +6,7 @@ import 'package:fluxpay/app/theme/app_theme.dart';
 
 import 'package:fluxpay/core/connectivity/connectivity_cubit.dart';
 import 'package:fluxpay/core/lifecycle/app_lifecycle_handler.dart';
+import 'package:fluxpay/core/session/session_wrapper.dart';
 
 import 'package:fluxpay/features/auth/presentation/bloc/app_lock_bloc.dart';
 import 'package:fluxpay/features/auth/presentation/bloc/app_lock_event.dart';
@@ -56,6 +57,7 @@ class _FluxPayAppState extends State<FluxPayApp> {
         /// AUTH
         /// ======================================================
         BlocProvider<AuthBloc>(
+          lazy: false,
           create: (_) => sl<AuthBloc>()..add(const CheckSessionRequested()),
         ),
 
@@ -117,6 +119,13 @@ class _FluxPayAppState extends State<FluxPayApp> {
 
           return BlocListener<AuthBloc, AuthState>(
             listener: (context, state) {
+              debugPrint('''
+================ FLUXPAY APP ================
+AUTH STATUS => ${state.status}
+SESSION => ${state.session != null}
+============================================
+''');
+
               /// ======================================================
               /// LOCK APP
               /// ======================================================
@@ -129,19 +138,24 @@ class _FluxPayAppState extends State<FluxPayApp> {
             },
 
             child: BlocBuilder<SettingsBloc, SettingsState>(
-              builder: (context, state) {
-                return MaterialApp(
-                  title: 'FluxPay',
+              builder: (context, settingsState) {
+                return SessionWrapper(
+                  child: MaterialApp(
+                    title: 'FluxPay',
 
-                  debugShowCheckedModeBanner: false,
+                    debugShowCheckedModeBanner: false,
 
-                  theme: AppTheme.lightTheme,
+                    theme: AppTheme.lightTheme,
 
-                  darkTheme: AppTheme.darkTheme,
+                    darkTheme: AppTheme.darkTheme,
 
-                  themeMode: state.themeMode,
+                    themeMode: settingsState.themeMode,
 
-                  home: const AppRouter(),
+                    /// ======================================================
+                    /// STABLE ROUTER
+                    /// ======================================================
+                    home: const AppRouter(),
+                  ),
                 );
               },
             ),

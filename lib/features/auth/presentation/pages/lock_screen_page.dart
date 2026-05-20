@@ -242,7 +242,7 @@ class _LockScreenPageState extends State<LockScreenPage> {
                       controller: _pinController,
                       keyboardType: TextInputType.number,
                       obscureText: true,
-                      maxLength: 6,
+                      maxLength: 4,
 
                       style: AppTextStyles.bodyLarge,
 
@@ -256,8 +256,6 @@ class _LockScreenPageState extends State<LockScreenPage> {
                         prefixIcon: const Icon(Icons.lock_outline_rounded),
 
                         filled: true,
-
-                        fillColor: Colors.white.withOpacity(0.04),
 
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(18),
