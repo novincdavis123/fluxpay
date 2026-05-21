@@ -83,16 +83,4 @@ class SessionServiceImpl implements SessionService {
 
     return false;
   }
-
-  @override
-  Future<void> savePin(String pin) async {
-    await secureStorage.savePin(pin);
-  }
-
-  @override
-  Future<bool> validatePin(String pin) async {
-    final savedPin = await secureStorage.getPin();
-
-    return savedPin == pin;
-  }
 }

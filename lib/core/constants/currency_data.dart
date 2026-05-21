@@ -10,6 +10,9 @@ class CurrencyData {
   });
 }
 
+/// =========================================================
+/// CURRENCY DATA
+/// =========================================================
 const currencies = [
   CurrencyData(code: 'USD', name: 'US Dollar', flag: '🇺🇸'),
   CurrencyData(code: 'INR', name: 'Indian Rupee', flag: '🇮🇳'),

@@ -26,9 +26,19 @@ class ExchangeState extends Equatable {
 
   final Decimal exchangeRate;
 
+  final Decimal previousRate;
+
   final Decimal fee;
 
   final Decimal totalPayable;
+
+  /// ======================================================
+  /// LIVE FLUCTUATION
+  /// ======================================================
+
+  final Decimal rateChangePercent;
+
+  final bool isRateIncreasing;
 
   /// ======================================================
   /// METADATA
@@ -47,8 +57,11 @@ class ExchangeState extends Equatable {
     required this.senderAmount,
     required this.recipientAmount,
     required this.exchangeRate,
+    required this.previousRate,
     required this.fee,
     required this.totalPayable,
+    required this.rateChangePercent,
+    required this.isRateIncreasing,
     required this.lastUpdated,
     required this.errorMessage,
   });
@@ -74,9 +87,16 @@ class ExchangeState extends Equatable {
 
       exchangeRate: Decimal.zero,
 
+      previousRate: Decimal.zero,
+
       fee: Decimal.zero,
 
       totalPayable: Decimal.zero,
+
+      /// LIVE RATE
+      rateChangePercent: Decimal.zero,
+
+      isRateIncreasing: true,
 
       lastUpdated: null,
 
@@ -97,8 +117,11 @@ class ExchangeState extends Equatable {
     Decimal? senderAmount,
     Decimal? recipientAmount,
     Decimal? exchangeRate,
+    Decimal? previousRate,
     Decimal? fee,
     Decimal? totalPayable,
+    Decimal? rateChangePercent,
+    bool? isRateIncreasing,
     DateTime? lastUpdated,
     String? errorMessage,
 
@@ -122,9 +145,15 @@ class ExchangeState extends Equatable {
 
       exchangeRate: exchangeRate ?? this.exchangeRate,
 
+      previousRate: previousRate ?? this.previousRate,
+
       fee: fee ?? this.fee,
 
       totalPayable: totalPayable ?? this.totalPayable,
+
+      rateChangePercent: rateChangePercent ?? this.rateChangePercent,
+
+      isRateIncreasing: isRateIncreasing ?? this.isRateIncreasing,
 
       lastUpdated: lastUpdated ?? this.lastUpdated,
 
@@ -165,6 +194,20 @@ class ExchangeState extends Equatable {
   }
 
   /// ======================================================
+  /// LIVE RATE HELPERS
+  /// ======================================================
+
+  bool get hasRateMovement {
+    return rateChangePercent != Decimal.zero;
+  }
+
+  String get formattedRateChange {
+    final sign = isRateIncreasing ? '+' : '';
+
+    return '$sign${rateChangePercent.toStringAsFixed(2)}%';
+  }
+
+  /// ======================================================
   /// FORMATTERS
   /// ======================================================
 
@@ -197,7 +240,8 @@ class ExchangeState extends Equatable {
   /// ======================================================
 
   String get rateLabel {
-    return '1 $fromCurrency = ${formattedRate} $toCurrency';
+    return '1 $fromCurrency = '
+        '$formattedRate $toCurrency';
   }
 
   String get feeLabel {
@@ -216,6 +260,22 @@ class ExchangeState extends Equatable {
     return 'Rates are outdated. Refreshing...';
   }
 
+  String get updatedTimeLabel {
+    if (lastUpdated == null) {
+      return 'Not updated';
+    }
+
+    final seconds = DateTime.now().difference(lastUpdated!).inSeconds;
+
+    if (seconds < 60) {
+      return 'Updated ${seconds}s ago';
+    }
+
+    final minutes = seconds ~/ 60;
+
+    return 'Updated ${minutes}m ago';
+  }
+
   @override
   List<Object?> get props => [
     isLoading,
@@ -226,8 +286,11 @@ class ExchangeState extends Equatable {
     senderAmount,
     recipientAmount,
     exchangeRate,
+    previousRate,
     fee,
     totalPayable,
+    rateChangePercent,
+    isRateIncreasing,
     lastUpdated,
     errorMessage,
   ];

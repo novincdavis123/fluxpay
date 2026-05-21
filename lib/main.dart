@@ -86,7 +86,6 @@ Future<void> main() async {
 
     Hive.openBox<ExchangeRateModel>(HiveBoxes.exchangeRates),
 
-    /// IMPORTANT FIX
     Hive.openBox<SettingsModel>(HiveBoxes.settings),
   ]);
 

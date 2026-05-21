@@ -50,6 +50,7 @@ class _LoginPageState extends State<LoginPage> {
         password: _passwordController.text.trim(),
       ),
     );
+    debugPrint('LOGIN AUTH BLOC => ${context.read<AuthBloc>().hashCode}');
   }
 
   @override

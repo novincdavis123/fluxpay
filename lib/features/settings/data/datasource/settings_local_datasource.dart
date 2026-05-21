@@ -15,11 +15,6 @@ abstract class SettingsLocalDataSource {
 }
 
 class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
-  /// =====================================================
-  /// IMPORTANT FIX
-  /// MUST MATCH MAIN.DART BOX NAME
-  /// =====================================================
-
   static const String boxName = HiveBoxes.settings;
 
   static const String settingsKey = 'settings';

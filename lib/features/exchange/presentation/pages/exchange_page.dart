@@ -32,7 +32,9 @@ class _ExchangePageState extends State<ExchangePage>
 
   final TextEditingController _receiveController = TextEditingController();
 
-  bool _isUpdatingControllers = false;
+  final bool _isUpdatingControllers = false;
+
+  Decimal _previousRate = Decimal.zero;
 
   @override
   void initState() {
@@ -90,7 +92,7 @@ class _ExchangePageState extends State<ExchangePage>
   }
 
   /// =====================================================
-  /// PARSE DECIMAL SAFELY
+  /// SAFE DECIMAL PARSER
   /// =====================================================
 
   Decimal _parseDecimal(String value) {
@@ -139,6 +141,18 @@ class _ExchangePageState extends State<ExchangePage>
             builder: (context, state) {
               _updateControllers(state);
 
+              final previousRate = _previousRate == Decimal.zero
+                  ? state.exchangeRate
+                  : _previousRate;
+
+              final rateDifference = state.exchangeRate - previousRate;
+
+              final isPositive = rateDifference >= Decimal.zero;
+
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _previousRate = state.exchangeRate;
+              });
+
               return Scaffold(
                 backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
@@ -149,6 +163,7 @@ class _ExchangePageState extends State<ExchangePage>
 
                   title: Text(
                     'Exchange',
+
                     style: AppTextStyles.headingMedium.copyWith(
                       color: AppColors.getTextPrimary(context),
                     ),
@@ -163,30 +178,27 @@ class _ExchangePageState extends State<ExchangePage>
                       crossAxisAlignment: CrossAxisAlignment.start,
 
                       children: [
-                        /// =====================================================
                         /// HEADER
-                        /// =====================================================
-                        Text(
-                          'Global Exchange',
-                          style: AppTextStyles.headingLarge.copyWith(
-                            color: AppColors.getTextPrimary(context),
-                          ),
-                        ),
+                        // Text(
+                        //   'Global Exchange',
 
-                        const SizedBox(height: AppSpacing.sm),
+                        //   style: AppTextStyles.headingLarge.copyWith(
+                        //     color: AppColors.getTextPrimary(context),
+                        //   ),
+                        // ),
 
-                        Text(
-                          'Fast and transparent international transfers',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.getTextSecondary(context),
-                          ),
-                        ),
+                        // const SizedBox(height: AppSpacing.sm),
 
-                        const SizedBox(height: AppSpacing.xl),
+                        // Text(
+                        //   'Fast and transparent international transfers',
 
-                        /// =====================================================
+                        //   style: AppTextStyles.bodyMedium.copyWith(
+                        //     color: AppColors.getTextSecondary(context),
+                        //   ),
+                        // ),
+                        // const SizedBox(height: AppSpacing.xl),
+
                         /// MAIN CARD
-                        /// =====================================================
                         Container(
                           width: double.infinity,
 
@@ -216,9 +228,7 @@ class _ExchangePageState extends State<ExchangePage>
 
                           child: Column(
                             children: [
-                              /// =====================================================
                               /// SEND
-                              /// =====================================================
                               _CurrencyInputCard(
                                 title: 'You Send',
 
@@ -247,9 +257,7 @@ class _ExchangePageState extends State<ExchangePage>
 
                               const SizedBox(height: AppSpacing.lg),
 
-                              /// =====================================================
                               /// SWAP
-                              /// =====================================================
                               Center(
                                 child: RotationTransition(
                                   turns: Tween<double>(begin: 0, end: 0.5)
@@ -302,9 +310,7 @@ class _ExchangePageState extends State<ExchangePage>
 
                               const SizedBox(height: AppSpacing.lg),
 
-                              /// =====================================================
                               /// RECEIVE
-                              /// =====================================================
                               _CurrencyInputCard(
                                 title: 'Recipient Gets',
 
@@ -333,9 +339,7 @@ class _ExchangePageState extends State<ExchangePage>
 
                               const SizedBox(height: AppSpacing.xl),
 
-                              /// =====================================================
                               /// RATE INFO
-                              /// =====================================================
                               Container(
                                 width: double.infinity,
 
@@ -356,6 +360,42 @@ class _ExchangePageState extends State<ExchangePage>
 
                                       value:
                                           '1 ${state.fromCurrency} = ${formatCurrency(amount: state.exchangeRate, currencyCode: state.toCurrency)}',
+                                    ),
+
+                                    const SizedBox(height: AppSpacing.sm),
+
+                                    /// LIVE FLUCTUATION
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+
+                                      children: [
+                                        Icon(
+                                          isPositive
+                                              ? Icons.trending_up_rounded
+                                              : Icons.trending_down_rounded,
+
+                                          size: 18,
+
+                                          color: isPositive
+                                              ? Colors.green
+                                              : Colors.red,
+                                        ),
+
+                                        const SizedBox(width: 4),
+
+                                        Text(
+                                          '${isPositive ? '+' : ''}${rateDifference.toStringAsFixed(4)}',
+
+                                          style: AppTextStyles.bodySmall
+                                              .copyWith(
+                                                color: isPositive
+                                                    ? Colors.green
+                                                    : Colors.red,
+
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                        ),
+                                      ],
                                     ),
 
                                     const SizedBox(height: AppSpacing.md),
@@ -383,36 +423,35 @@ class _ExchangePageState extends State<ExchangePage>
                                 ),
                               ),
 
-                              /// =====================================================
-                              /// RATE STATUS
-                              /// =====================================================
+                              /// STALE STATUS
                               if (state.isStale)
                                 Padding(
                                   padding: const EdgeInsets.only(top: 16),
 
                                   child: Text(
                                     'Refreshing rates...',
+
                                     style: AppTextStyles.bodySmall.copyWith(
                                       color: Colors.orange,
                                     ),
                                   ),
                                 ),
 
-                              /// =====================================================
                               /// LOADING
-                              /// =====================================================
                               if (state.isLoading)
                                 const Padding(
                                   padding: EdgeInsets.only(top: 20),
+
                                   child: CircularProgressIndicator(),
                                 ),
 
-                              /// =====================================================
                               /// UPDATED
-                              /// =====================================================
                               if (state.lastUpdated != null)
                                 Padding(
-                                  padding: const EdgeInsets.only(top: 18),
+                                  padding: const EdgeInsets.only(
+                                    top: 10,
+                                    bottom: 4,
+                                  ),
 
                                   child: Text(
                                     'Updated just now',
@@ -424,6 +463,34 @@ class _ExchangePageState extends State<ExchangePage>
                                     ),
                                   ),
                                 ),
+
+                              // const SizedBox(height: AppSpacing.xl),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 58,
+                                child: ElevatedButton(
+                                  onPressed: state.hasValidCalculation
+                                      ? () {
+                                          /// Navigate to beneficiary / review
+                                        }
+                                      : null,
+
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(18),
+                                    ),
+                                  ),
+
+                                  child: Text(
+                                    'Continue Transfer',
+                                    style: AppTextStyles.bodyLarge.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -571,6 +638,7 @@ class _CurrencyInputCard extends StatelessWidget {
 
             child: Text(
               currency.name,
+
               style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.getTextSecondary(context),
               ),
@@ -613,6 +681,7 @@ class _RateRow extends StatelessWidget {
 
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.getTextPrimary(context),
+
               fontWeight: FontWeight.w700,
             ),
           ),

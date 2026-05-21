@@ -36,10 +36,6 @@ import 'package:fluxpay/features/auth/presentation/bloc/auth_bloc.dart';
 
 import 'package:fluxpay/features/auth/presentation/bloc/app_lock_bloc.dart';
 
-/// =====================================================
-/// EXCHANGE
-/// =====================================================
-
 import 'package:fluxpay/features/exchange/data/datasource/exchange_localdatasource.dart';
 
 import 'package:fluxpay/features/exchange/data/datasource/exchange_remote_datasource.dart';
@@ -50,10 +46,6 @@ import 'package:fluxpay/features/exchange/domain/repositories/exchange_repositor
 
 import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc.dart';
 
-/// =====================================================
-/// BENEFICIARIES
-/// =====================================================
-
 import 'package:fluxpay/features/beneficiaries/data/datasource/beneficiary_local_datasource.dart';
 
 import 'package:fluxpay/features/beneficiaries/data/repositories/beneficiary_repository_impl.dart';
@@ -61,10 +53,6 @@ import 'package:fluxpay/features/beneficiaries/data/repositories/beneficiary_rep
 import 'package:fluxpay/features/beneficiaries/domain/repositories/beneficiary_repository.dart';
 
 import 'package:fluxpay/features/beneficiaries/presentation/bloc/beneficiary_bloc.dart';
-
-/// =====================================================
-/// TRANSACTIONS
-/// =====================================================
 
 import 'package:fluxpay/features/transactions/data/datasource/transaction_local_datasource.dart';
 
@@ -74,15 +62,7 @@ import 'package:fluxpay/features/transactions/domain/repositories/transaction_re
 
 import 'package:fluxpay/features/transactions/presentation/bloc/transaction_bloc.dart';
 
-/// =====================================================
-/// ANALYTICS
-/// =====================================================
-
 import 'package:fluxpay/features/analytics/domain/services/analytics_service.dart';
-
-/// =====================================================
-/// SETTINGS
-/// =====================================================
 
 import 'package:fluxpay/features/settings/data/datasource/settings_local_datasource.dart';
 
@@ -91,10 +71,6 @@ import 'package:fluxpay/features/settings/data/repositories/settings_repository_
 import 'package:fluxpay/features/settings/domain/repositories/settings_repository.dart';
 
 import 'package:fluxpay/features/settings/presentation/bloc/settings_bloc.dart';
-
-/// =====================================================
-/// SPLASH
-/// =====================================================
 
 import 'package:fluxpay/features/splash/presentation/bloc/splash_bloc.dart';
 

@@ -17,13 +17,16 @@ class AppRouter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<AuthBloc, AuthState, AuthStatus>(
-      selector: (state) => state.status,
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        final status = state.status;
+        debugPrint('ROUTER AUTH BLOC => ${context.read<AuthBloc>().hashCode}');
 
-      builder: (context, status) {
         debugPrint('''
 ================ APP ROUTER ================
 STATUS => $status
+SESSION => ${state.session != null}
+APP LOCKED => ${state.appLocked}
 ============================================
 ''');
 

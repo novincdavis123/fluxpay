@@ -33,7 +33,7 @@ List<TransactionModel> generateMockTransactions() {
   ];
 
   final currencies = ['USD', 'EUR', 'GBP', 'INR', 'AED'];
-
+  // Generate 1200 mock transactions
   return List.generate(1200, (index) {
     final senderCurrency = currencies[random.nextInt(currencies.length)];
 

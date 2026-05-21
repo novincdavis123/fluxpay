@@ -66,6 +66,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       final pinEnabled = await repository.isPinEnabled();
 
+      final hasSecurity = await repository.hasSecuritySetup();
+
       final session = AuthSession(
         accessToken: 'mock_access_token',
         refreshToken: 'mock_refresh_token',
@@ -76,8 +78,34 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       await repository.saveSession(session);
 
-      /// IMPORTANT:
-      /// DO NOT EMIT INITIAL STATE HERE
+      /// =====================================================
+      /// EXISTING USER
+      /// =====================================================
+
+      if (hasSecurity) {
+        emit(
+          state.copyWith(
+            status: AuthStatus.authenticated,
+            session: session,
+            biometricEnabled: biometricEnabled,
+            pinEnabled: pinEnabled,
+            biometricValidated: true,
+            pinValidated: true,
+            appLocked: false,
+            clearError: true,
+          ),
+        );
+
+        if (kDebugMode) {
+          debugPrint('LOGIN -> authenticated (existing user)');
+        }
+
+        return;
+      }
+
+      /// =====================================================
+      /// NEW USER
+      /// =====================================================
 
       emit(
         state.copyWith(
@@ -112,7 +140,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     try {
       emit(state.copyWith(status: AuthStatus.loading));
-
+      await repository.clearSecurity();
       await repository.clearSession();
 
       /// CLEAR TRANSACTIONS
@@ -130,10 +158,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         await Hive.box<BeneficiaryHiveModel>(HiveBoxes.beneficiaries).clear();
       }
 
-      /// IMPORTANT:
-      /// SINGLE CLEAN RESET ONLY
+      final biometricEnabled = await repository.isBiometricEnabled();
 
-      emit(AuthState.initial().copyWith(status: AuthStatus.unauthenticated));
+      final pinEnabled = await repository.isPinEnabled();
+
+      emit(
+        AuthState.initial().copyWith(
+          status: AuthStatus.unauthenticated,
+          biometricEnabled: biometricEnabled,
+          pinEnabled: pinEnabled,
+          appLocked: false,
+          biometricValidated: false,
+          pinValidated: false,
+        ),
+      );
 
       if (kDebugMode) {
         debugPrint('LOGOUT -> unauthenticated');

@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:fluxpay/features/transactions/presentation/widgets/glassicon_button.dart';
+import 'package:fluxpay/features/transactions/presentation/widgets/minimetric.dart';
+import 'package:fluxpay/features/transactions/presentation/widgets/premiuminfo_row.dart';
+import 'package:fluxpay/features/transactions/presentation/widgets/premiumsection_card.dart';
+import 'package:fluxpay/features/transactions/presentation/widgets/premiumtimeline_tile.dart';
 import 'package:intl/intl.dart';
 
 import 'package:fluxpay/app/theme/app_colors.dart';
@@ -32,7 +37,7 @@ class TransactionDetailsPage extends StatelessWidget {
 
             leading: Padding(
               padding: const EdgeInsets.all(8),
-              child: _GlassIconButton(
+              child: GlassIconButton(
                 icon: Icons.arrow_back_ios_new_rounded,
                 onTap: () => Navigator.pop(context),
               ),
@@ -41,10 +46,7 @@ class TransactionDetailsPage extends StatelessWidget {
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 12),
-                child: _GlassIconButton(
-                  icon: Icons.share_rounded,
-                  onTap: () {},
-                ),
+                child: GlassIconButton(icon: Icons.share_rounded, onTap: () {}),
               ),
             ],
 
@@ -288,8 +290,7 @@ class TransactionDetailsPage extends StatelessWidget {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: _MiniMetric(
-                                      context,
+                                    child: Minimetric(
                                       title: 'Rate',
                                       value: transaction.exchangeRate
                                           .toStringAsFixed(4),
@@ -300,8 +301,7 @@ class TransactionDetailsPage extends StatelessWidget {
                                   const SizedBox(width: 12),
 
                                   Expanded(
-                                    child: _MiniMetric(
-                                      context,
+                                    child: Minimetric(
                                       title: 'Fee',
                                       value:
                                           '${transaction.fee.toStringAsFixed(2)}',
@@ -332,28 +332,28 @@ class TransactionDetailsPage extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   /// BENEFICIARY
-                  _PremiumSectionCard(
+                  PremiumSectionCard(
                     title: 'Beneficiary',
                     icon: Icons.person_rounded,
 
                     child: Column(
                       children: [
-                        _PremiumInfoRow(
+                        PremiumInfoRow(
                           label: 'Recipient',
                           value: transaction.beneficiaryName,
                         ),
 
-                        _PremiumInfoRow(
+                        PremiumInfoRow(
                           label: 'Bank',
                           value: transaction.beneficiaryBank,
                         ),
 
-                        _PremiumInfoRow(
+                        PremiumInfoRow(
                           label: 'Account',
                           value: transaction.maskedAccountNumber,
                         ),
 
-                        _PremiumInfoRow(
+                        PremiumInfoRow(
                           label: 'Transfer ID',
                           value: transaction.id,
                           isLast: true,
@@ -365,13 +365,13 @@ class TransactionDetailsPage extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   /// EXCHANGE DETAILS
-                  _PremiumSectionCard(
+                  PremiumSectionCard(
                     title: 'Exchange Details',
                     icon: Icons.currency_exchange_rounded,
 
                     child: Column(
                       children: [
-                        _PremiumInfoRow(
+                        PremiumInfoRow(
                           label: 'Exchange Rate',
 
                           value:
@@ -380,7 +380,7 @@ class TransactionDetailsPage extends StatelessWidget {
                               '${transaction.receiverCurrency}',
                         ),
 
-                        _PremiumInfoRow(
+                        PremiumInfoRow(
                           label: 'Transfer Fee',
 
                           value:
@@ -388,7 +388,7 @@ class TransactionDetailsPage extends StatelessWidget {
                               '${transaction.senderCurrency}',
                         ),
 
-                        _PremiumInfoRow(
+                        PremiumInfoRow(
                           label: 'Total Paid',
 
                           value:
@@ -406,20 +406,20 @@ class TransactionDetailsPage extends StatelessWidget {
                   const SizedBox(height: 20),
 
                   /// TIMELINE
-                  _PremiumSectionCard(
+                  PremiumSectionCard(
                     title: 'Transfer Timeline',
                     icon: Icons.timeline_rounded,
 
                     child: Column(
                       children: [
-                        const _PremiumTimelineTile(
+                        const PremiumTimelineTile(
                           title: 'Transfer Created',
                           subtitle: 'Your transfer request was initiated',
                           completed: true,
                           isLast: false,
                         ),
 
-                        _PremiumTimelineTile(
+                        PremiumTimelineTile(
                           title: 'Payment Processing',
 
                           subtitle: _processingSubtitle(),
@@ -430,7 +430,7 @@ class TransactionDetailsPage extends StatelessWidget {
                           isLast: false,
                         ),
 
-                        _PremiumTimelineTile(
+                        PremiumTimelineTile(
                           title: 'Recipient Delivery',
 
                           subtitle: _deliverySubtitle(),
@@ -447,52 +447,6 @@ class TransactionDetailsPage extends StatelessWidget {
                   const SizedBox(height: 40),
                 ],
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _MiniMetric(
-    BuildContext context, {
-    required String title,
-    required String value,
-    required IconData icon,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-
-        color: AppColors.getCardColor(context),
-      ),
-
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
-        children: [
-          Icon(icon, color: AppColors.primary, size: 22),
-
-          const SizedBox(height: 12),
-
-          Text(
-            title,
-
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.getTextSecondary(context),
-            ),
-          ),
-
-          const SizedBox(height: 4),
-
-          Text(
-            value,
-
-            style: AppTextStyles.headingSmall.copyWith(
-              color: AppColors.getTextPrimary(context),
-              fontWeight: FontWeight.w800,
             ),
           ),
         ],
@@ -574,269 +528,5 @@ class TransactionDetailsPage extends StatelessWidget {
       case TransactionStatus.refunded:
         return 'Transfer refunded successfully';
     }
-  }
-}
-
-class _GlassIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _GlassIconButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: onTap,
-
-        child: Container(
-          width: 46,
-          height: 46,
-
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-
-            color: AppColors.getCardColor(context).withOpacity(0.9),
-
-            border: Border.all(color: AppColors.getBorderColor(context)),
-          ),
-
-          child: Icon(icon, color: AppColors.getTextPrimary(context), size: 20),
-        ),
-      ),
-    );
-  }
-}
-
-class _PremiumSectionCard extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Widget child;
-
-  const _PremiumSectionCard({
-    required this.title,
-    required this.icon,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      width: double.infinity,
-
-      padding: const EdgeInsets.all(22),
-
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
-
-        color: AppColors.getCardColor(context),
-
-        border: Border.all(color: AppColors.getBorderColor(context)),
-
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.16 : 0.03),
-
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-
-                  color: AppColors.primary.withOpacity(0.10),
-                ),
-
-                child: Icon(icon, color: AppColors.primary),
-              ),
-
-              const SizedBox(width: 14),
-
-              Text(
-                title,
-
-                style: AppTextStyles.headingMedium.copyWith(
-                  color: AppColors.getTextPrimary(context),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-
-          child,
-        ],
-      ),
-    );
-  }
-}
-
-class _PremiumInfoRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool isLast;
-  final bool isBold;
-  final Color? valueColor;
-
-  const _PremiumInfoRow({
-    required this.label,
-    required this.value,
-    this.isLast = false,
-    this.isBold = false,
-    this.valueColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(bottom: isLast ? 0 : 16),
-
-      padding: const EdgeInsets.symmetric(vertical: 10),
-
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
-        children: [
-          Expanded(
-            child: Text(
-              label,
-
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.getTextSecondary(context),
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 16),
-
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: valueColor ?? AppColors.getTextPrimary(context),
-
-                fontWeight: isBold ? FontWeight.w800 : FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PremiumTimelineTile extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final bool completed;
-  final bool isLast;
-
-  const _PremiumTimelineTile({
-    required this.title,
-    required this.subtitle,
-    required this.completed,
-    required this.isLast,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: isLast ? 0 : 20),
-
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-
-        children: [
-          Column(
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-
-                width: 20,
-                height: 20,
-
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-
-                  color: completed
-                      ? AppColors.success
-                      : AppColors.getTextMuted(context),
-
-                  boxShadow: completed
-                      ? [
-                          BoxShadow(
-                            color: AppColors.success.withOpacity(0.4),
-                            blurRadius: 12,
-                          ),
-                        ]
-                      : [],
-                ),
-
-                child: completed
-                    ? const Icon(Icons.check, size: 12, color: Colors.white)
-                    : null,
-              ),
-
-              if (!isLast)
-                Container(
-                  width: 2,
-                  height: 58,
-
-                  color: completed
-                      ? AppColors.success
-                      : AppColors.getBorderColor(context),
-                ),
-            ],
-          ),
-
-          const SizedBox(width: 16),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-
-              children: [
-                Text(
-                  title,
-
-                  style: AppTextStyles.headingSmall.copyWith(
-                    color: AppColors.getTextPrimary(context),
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                Text(
-                  subtitle,
-
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.getTextSecondary(context),
-                    height: 1.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

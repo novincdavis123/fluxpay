@@ -16,6 +16,7 @@ class ConnectivityCubit extends Cubit<ConnectivityState> {
     _initialize();
   }
 
+  /// INITIALIZATION
   Future<void> _initialize() async {
     final isConnected = await service.checkConnection();
 

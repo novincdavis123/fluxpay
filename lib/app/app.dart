@@ -14,6 +14,7 @@ import 'package:fluxpay/features/auth/presentation/bloc/app_lock_event.dart';
 import 'package:fluxpay/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fluxpay/features/auth/presentation/bloc/auth_event.dart'
     hide LockAppRequested;
+
 import 'package:fluxpay/features/auth/presentation/bloc/auth_state.dart';
 
 import 'package:fluxpay/features/beneficiaries/presentation/bloc/beneficiary_bloc.dart';
@@ -45,7 +46,6 @@ class _FluxPayAppState extends State<FluxPayApp> {
   @override
   void dispose() {
     _lifecycleHandler?.dispose();
-
     super.dispose();
   }
 
@@ -118,6 +118,9 @@ class _FluxPayAppState extends State<FluxPayApp> {
           }
 
           return BlocListener<AuthBloc, AuthState>(
+            listenWhen: (previous, current) =>
+                previous.status != current.status,
+
             listener: (context, state) {
               debugPrint('''
 ================ FLUXPAY APP ================
@@ -135,6 +138,22 @@ SESSION => ${state.session != null}
                   state.requiresPin) {
                 context.read<AppLockBloc>().add(const LockAppRequested());
               }
+
+              /// ======================================================
+              /// FORCE APP ROUTER REBUILD
+              /// ======================================================
+
+              if (state.status == AuthStatus.setupSecurity) {
+                debugPrint('NAVIGATION TARGET => SECURITY SETUP');
+              }
+
+              if (state.status == AuthStatus.authenticated) {
+                debugPrint('NAVIGATION TARGET => HOME');
+              }
+
+              if (state.status == AuthStatus.unauthenticated) {
+                debugPrint('NAVIGATION TARGET => LOGIN');
+              }
             },
 
             child: BlocBuilder<SettingsBloc, SettingsState>(
@@ -145,22 +164,29 @@ IS DARK => ${settingsState.settings.isDarkMode}
 THEME MODE => ${settingsState.themeMode}
 ====================================
 ''');
+
                 return SessionWrapper(
-                  child: MaterialApp(
-                    title: 'FluxPay',
+                  child: BlocBuilder<AuthBloc, AuthState>(
+                    builder: (context, authState) {
+                      /// ======================================================
+                      /// APP ROUTER NOW REBUILDS
+                      /// WHEN AUTH STATE CHANGES
+                      /// ======================================================
 
-                    debugShowCheckedModeBanner: false,
+                      return MaterialApp(
+                        title: 'FluxPay',
 
-                    theme: AppTheme.lightTheme,
+                        debugShowCheckedModeBanner: false,
 
-                    darkTheme: AppTheme.darkTheme,
+                        theme: AppTheme.lightTheme,
 
-                    themeMode: settingsState.themeMode,
+                        darkTheme: AppTheme.darkTheme,
 
-                    /// ======================================================
-                    /// STABLE ROUTER
-                    /// ======================================================
-                    home: const AppRouter(),
+                        themeMode: settingsState.themeMode,
+
+                        home: const AppRouter(),
+                      );
+                    },
                   ),
                 );
               },

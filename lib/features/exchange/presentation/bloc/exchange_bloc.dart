@@ -1,13 +1,10 @@
 import 'dart:async';
 
 import 'package:decimal/decimal.dart';
-
 import 'package:flutter/foundation.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:fluxpay/core/errors/failures.dart';
-
 import 'package:fluxpay/core/services/exchange_calculator_service.dart';
 import 'package:fluxpay/core/services/live_rate_simulation_service.dart';
 
@@ -84,9 +81,31 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
     _liveRateSubscription = liveRateSimulationService.stream.listen(
       (updatedRate) {
         if (!isClosed) {
-          add(LiveRateUpdated(updatedRate));
+          final previousRate = state.exchangeRate;
+
+          Decimal percentageChange = Decimal.zero;
+
+          /// SAFE PERCENTAGE CALCULATION
+          if (previousRate > Decimal.zero) {
+            final difference = updatedRate - previousRate;
+
+            final percentageAsDouble =
+                (difference.toDouble() / previousRate.toDouble()) * 100;
+
+            percentageChange = Decimal.parse(
+              percentageAsDouble.toStringAsFixed(4),
+            );
+          }
+
+          add(
+            LiveRateUpdated(
+              updatedRate: updatedRate,
+              percentageChange: percentageChange,
+            ),
+          );
         }
       },
+
       onError: (error) {
         if (kDebugMode) {
           debugPrint('❌ Live Rate Stream Error: $error');
@@ -109,7 +128,7 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
 
     _isFetching = true;
 
-    emit(state.copyWith(isLoading: true, errorMessage: null));
+    emit(state.copyWith(isLoading: true, clearError: true));
 
     try {
       final ExchangeRateEntity rateEntity = await repository.getExchangeRate(
@@ -124,10 +143,7 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
         sameCurrency: event.fromCurrency == event.toCurrency,
       );
 
-      /// ======================================================
-      /// START LIVE RATE SIMULATION
-      /// ======================================================
-
+      /// START LIVE SIMULATION
       liveRateSimulationService.start(baseRate: calculation.exchangeRate);
 
       emit(
@@ -137,6 +153,8 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
 
           fromCurrency: event.fromCurrency,
           toCurrency: event.toCurrency,
+
+          previousRate: state.exchangeRate,
 
           exchangeRate: calculation.exchangeRate,
 
@@ -148,7 +166,10 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
 
           lastUpdated: DateTime.now(),
 
-          errorMessage: null,
+          rateChangePercent: Decimal.zero,
+          isRateIncreasing: true,
+
+          clearError: true,
         ),
       );
 
@@ -163,19 +184,8 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
         debugPrint('');
       }
     }
-    /// ======================================================
     /// FAILURE
-    /// ======================================================
     on Failure catch (failure) {
-      if (kDebugMode) {
-        debugPrint('');
-        debugPrint('════════ EXCHANGE FAILURE ════════');
-        debugPrint('TYPE: ${failure.runtimeType}');
-        debugPrint('MESSAGE: ${failure.message}');
-        debugPrint('══════════════════════════════════');
-        debugPrint('');
-      }
-
       emit(
         state.copyWith(
           isLoading: false,
@@ -183,19 +193,13 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
           errorMessage: failure.message,
         ),
       );
-    }
-    /// ======================================================
-    /// UNKNOWN ERROR
-    /// ======================================================
-    catch (e, stackTrace) {
-      if (kDebugMode) {
-        debugPrint('');
-        debugPrint('❌ UNEXPECTED EXCHANGE ERROR');
-        debugPrint('$e');
-        debugPrint('$stackTrace');
-        debugPrint('');
-      }
 
+      if (kDebugMode) {
+        debugPrint('❌ Exchange Failure: ${failure.message}');
+      }
+    }
+    /// UNKNOWN ERROR
+    catch (e, stackTrace) {
       emit(
         state.copyWith(
           isLoading: false,
@@ -203,6 +207,11 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
           errorMessage: 'Unexpected error occurred',
         ),
       );
+
+      if (kDebugMode) {
+        debugPrint('❌ Unexpected Error: $e');
+        debugPrint('$stackTrace');
+      }
     } finally {
       _isFetching = false;
     }
@@ -339,16 +348,13 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
 
     final toCurrency = state.fromCurrency;
 
-    /// ======================================================
-    /// SWAP AMOUNTS TOO
-    /// ======================================================
-
     emit(
       state.copyWith(
         fromCurrency: fromCurrency,
         toCurrency: toCurrency,
 
         senderAmount: oldRecipientAmount,
+
         recipientAmount: oldSenderAmount,
       ),
     );
@@ -461,10 +467,20 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
 
     emit(
       state.copyWith(
+        previousRate: state.exchangeRate,
+
         exchangeRate: calculation.exchangeRate,
+
+        rateChangePercent: event.percentageChange,
+
+        isRateIncreasing: event.percentageChange >= Decimal.zero,
+
         recipientAmount: calculation.recipientGets,
+
         fee: calculation.fee,
+
         totalPayable: calculation.totalPayable,
+
         lastUpdated: DateTime.now(),
       ),
     );
@@ -478,7 +494,7 @@ class ExchangeBloc extends Bloc<ExchangeEvent, ExchangeState> {
     ClearExchangeError event,
     Emitter<ExchangeState> emit,
   ) {
-    emit(state.copyWith(errorMessage: null));
+    emit(state.copyWith(clearError: true));
   }
 
   /// ======================================================

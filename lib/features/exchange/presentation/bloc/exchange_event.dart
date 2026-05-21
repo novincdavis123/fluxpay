@@ -54,7 +54,6 @@ class RecipientAmountChanged extends ExchangeEvent {
 
 /// ======================================================
 /// UPDATE SENDER AMOUNT
-/// Decimal-safe version
 /// ======================================================
 
 class UpdateSenderAmount extends ExchangeEvent {
@@ -68,7 +67,6 @@ class UpdateSenderAmount extends ExchangeEvent {
 
 /// ======================================================
 /// UPDATE RECEIVER AMOUNT
-/// Decimal-safe version
 /// ======================================================
 
 class UpdateReceiverAmount extends ExchangeEvent {
@@ -138,7 +136,7 @@ class RefreshExchangeRates extends ExchangeEvent {
 }
 
 /// ======================================================
-/// REFRESH EXCHANGE RATE
+/// REFRESH SINGLE RATE
 /// ======================================================
 
 class RefreshExchangeRate extends ExchangeEvent {
@@ -146,7 +144,7 @@ class RefreshExchangeRate extends ExchangeEvent {
 }
 
 /// ======================================================
-/// MARK RATES STALE
+/// MARK RATE AS STALE
 /// ======================================================
 
 class MarkRatesAsStale extends ExchangeEvent {
@@ -154,16 +152,22 @@ class MarkRatesAsStale extends ExchangeEvent {
 }
 
 /// ======================================================
-/// LIVE RATE UPDATE
+/// LIVE RATE UPDATED
 /// ======================================================
 
 class LiveRateUpdated extends ExchangeEvent {
   final Decimal updatedRate;
 
-  const LiveRateUpdated(this.updatedRate);
+  /// percentage movement from previous rate
+  final Decimal percentageChange;
+
+  const LiveRateUpdated({
+    required this.updatedRate,
+    required this.percentageChange,
+  });
 
   @override
-  List<Object?> get props => [updatedRate];
+  List<Object?> get props => [updatedRate, percentageChange];
 }
 
 /// ======================================================

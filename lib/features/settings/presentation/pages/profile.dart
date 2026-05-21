@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluxpay/app/router/app_router.dart';
 
 import 'package:fluxpay/app/theme/app_colors.dart';
 import 'package:fluxpay/app/theme/app_spacing.dart';
@@ -10,8 +11,10 @@ import 'package:fluxpay/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fluxpay/features/auth/presentation/bloc/auth_event.dart';
 import 'package:fluxpay/features/auth/presentation/bloc/auth_state.dart';
 
-import 'package:fluxpay/features/auth/presentation/pages/login_page.dart';
 import 'package:fluxpay/features/settings/presentation/pages/settings_page.dart';
+import 'package:fluxpay/features/settings/presentation/widgets/profile_tile.dart';
+import 'package:fluxpay/features/settings/presentation/widgets/profilestat_card.dart';
+import 'package:fluxpay/features/settings/presentation/widgets/section_tile.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -189,8 +192,8 @@ class ProfilePage extends StatelessWidget {
 
       listener: (context, state) {
         if (state.status == AuthStatus.unauthenticated) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const LoginPage()),
+          Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const AppRouter()),
             (route) => false,
           );
         }
@@ -336,7 +339,7 @@ class ProfilePage extends StatelessWidget {
 
                               children: [
                                 Text(
-                                  'Novin Davis',
+                                  'Jerin David',
 
                                   style: AppTextStyles.headingMedium.copyWith(
                                     color: AppColors.getTextPrimary(context),
@@ -346,7 +349,7 @@ class ProfilePage extends StatelessWidget {
                                 const SizedBox(height: 8),
 
                                 Text(
-                                  'novin@fluxpay.app',
+                                  'jerin@fluxpay.app',
 
                                   style: AppTextStyles.bodyMedium.copyWith(
                                     color: AppColors.getTextSecondary(context),
@@ -400,7 +403,7 @@ class ProfilePage extends StatelessWidget {
                       Row(
                         children: [
                           Expanded(
-                            child: _ProfileStatCard(
+                            child: ProfileStatCard(
                               icon: Icons.sync_alt_rounded,
                               title: 'Transfers',
                               value: '128',
@@ -410,7 +413,7 @@ class ProfilePage extends StatelessWidget {
                           const SizedBox(width: 14),
 
                           Expanded(
-                            child: _ProfileStatCard(
+                            child: ProfileStatCard(
                               icon: Icons.public_rounded,
                               title: 'Countries',
                               value: '18',
@@ -420,7 +423,7 @@ class ProfilePage extends StatelessWidget {
                           const SizedBox(width: 14),
 
                           Expanded(
-                            child: _ProfileStatCard(
+                            child: ProfileStatCard(
                               icon: Icons.account_balance_wallet_rounded,
                               title: 'Volume',
                               value: '\$42K',
@@ -434,25 +437,25 @@ class ProfilePage extends StatelessWidget {
 
                 const SizedBox(height: 34),
 
-                const _SectionTitle(title: 'Account'),
+                const SectionTitle(title: 'Account'),
 
                 const SizedBox(height: 18),
 
-                _ProfileTile(
+                ProfileTile(
                   icon: Icons.badge_outlined,
                   title: 'Personal Information',
                   subtitle: 'Manage your profile details',
                   onTap: () {},
                 ),
 
-                _ProfileTile(
+                ProfileTile(
                   icon: Icons.lock_outline_rounded,
                   title: 'Security Settings',
                   subtitle: 'PIN, biometrics and app lock',
                   onTap: () {},
                 ),
 
-                _ProfileTile(
+                ProfileTile(
                   icon: Icons.notifications_active_outlined,
                   title: 'Notifications',
                   subtitle: 'Manage alerts and updates',
@@ -461,18 +464,18 @@ class ProfilePage extends StatelessWidget {
 
                 const SizedBox(height: 28),
 
-                const _SectionTitle(title: 'Support'),
+                const SectionTitle(title: 'Support'),
 
                 const SizedBox(height: 18),
 
-                _ProfileTile(
+                ProfileTile(
                   icon: Icons.support_agent_rounded,
                   title: 'Help Center',
                   subtitle: 'FAQs and customer support',
                   onTap: () {},
                 ),
 
-                _ProfileTile(
+                ProfileTile(
                   icon: Icons.verified_user_outlined,
                   title: 'Terms & Privacy',
                   subtitle: 'Read our policies',
@@ -514,182 +517,6 @@ class ProfilePage extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// =====================================================
-/// SECTION TITLE
-/// =====================================================
-
-class _SectionTitle extends StatelessWidget {
-  final String title;
-
-  const _SectionTitle({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      title,
-
-      style: AppTextStyles.headingSmall.copyWith(
-        color: AppColors.getTextSecondary(context),
-      ),
-    );
-  }
-}
-
-/// =====================================================
-/// PROFILE TILE
-/// =====================================================
-
-class _ProfileTile extends StatelessWidget {
-  final IconData icon;
-
-  final String title;
-
-  final String subtitle;
-
-  final VoidCallback onTap;
-
-  const _ProfileTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-
-      child: Material(
-        color: Colors.transparent,
-
-        child: InkWell(
-          borderRadius: BorderRadius.circular(24),
-          onTap: onTap,
-
-          child: Ink(
-            padding: const EdgeInsets.all(18),
-
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              color: AppColors.getCardColor(context),
-
-              border: Border.all(color: AppColors.getBorderColor(context)),
-            ),
-
-            child: Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(18),
-                    color: AppColors.primary.withOpacity(0.12),
-                  ),
-
-                  child: Icon(icon, color: AppColors.primary),
-                ),
-
-                const SizedBox(width: 16),
-
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-
-                    children: [
-                      Text(
-                        title,
-
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.getTextPrimary(context),
-                        ),
-                      ),
-
-                      const SizedBox(height: 5),
-
-                      Text(
-                        subtitle,
-
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.getTextSecondary(context),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: AppColors.getTextSecondary(context),
-                  size: 16,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// =====================================================
-/// PROFILE STATS
-/// =====================================================
-
-class _ProfileStatCard extends StatelessWidget {
-  final IconData icon;
-
-  final String title;
-
-  final String value;
-
-  const _ProfileStatCard({
-    required this.icon,
-    required this.title,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        color: AppColors.primary.withOpacity(0.08),
-      ),
-
-      child: Column(
-        children: [
-          Icon(icon, color: AppColors.primary, size: 24),
-
-          const SizedBox(height: 10),
-
-          Text(
-            value,
-
-            style: AppTextStyles.headingSmall.copyWith(
-              color: AppColors.getTextPrimary(context),
-            ),
-          ),
-
-          const SizedBox(height: 4),
-
-          Text(
-            title,
-
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.getTextSecondary(context),
-            ),
-          ),
-        ],
       ),
     );
   }

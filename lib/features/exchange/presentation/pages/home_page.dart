@@ -14,6 +14,14 @@ import 'package:fluxpay/features/beneficiaries/presentation/bloc/beneficiary_eve
 import 'package:fluxpay/features/beneficiaries/presentation/pages/beneficiary_page.dart';
 
 import 'package:fluxpay/features/exchange/presentation/pages/exchange_page.dart';
+import 'package:fluxpay/features/exchange/presentation/widgets/currency_chip.dart';
+import 'package:fluxpay/features/exchange/presentation/widgets/largeaction_card.dart';
+import 'package:fluxpay/features/exchange/presentation/widgets/marketrate_tile.dart';
+import 'package:fluxpay/features/exchange/presentation/widgets/mediumaction_card.dart';
+import 'package:fluxpay/features/exchange/presentation/widgets/miniinsight_card.dart';
+import 'package:fluxpay/features/exchange/presentation/widgets/quickstat.dart';
+import 'package:fluxpay/features/exchange/presentation/widgets/recentactivity_tile.dart';
+import 'package:fluxpay/features/exchange/presentation/widgets/topaction_button.dart';
 
 import 'package:fluxpay/features/settings/presentation/pages/profile.dart';
 
@@ -115,7 +123,7 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
 
-                      _TopActionButton(
+                      TopActionButton(
                         icon: Icons.account_circle_rounded,
 
                         onTap: () async {
@@ -231,11 +239,11 @@ class _HomePageState extends State<HomePage> {
 
                         Row(
                           children: const [
-                            _CurrencyChip(label: 'USD Wallet'),
+                            CurrencyChip(label: 'USD Wallet'),
 
                             SizedBox(width: 12),
 
-                            _CurrencyChip(label: 'INR Wallet'),
+                            CurrencyChip(label: 'INR Wallet'),
                           ],
                         ),
 
@@ -245,11 +253,11 @@ class _HomePageState extends State<HomePage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                           children: const [
-                            _QuickStat(label: 'This Month', value: '\$8.2K'),
+                            QuickStat(label: 'This Month', value: '\$8.2K'),
 
-                            _QuickStat(label: 'Transfers', value: '48'),
+                            QuickStat(label: 'Transfers', value: '48'),
 
-                            _QuickStat(label: 'Countries', value: '12'),
+                            QuickStat(label: 'Countries', value: '12'),
                           ],
                         ),
                       ],
@@ -264,7 +272,7 @@ class _HomePageState extends State<HomePage> {
                   Row(
                     children: const [
                       Expanded(
-                        child: _MiniInsightCard(
+                        child: MiniInsightCard(
                           title: 'Monthly Growth',
                           value: '+12.4%',
                           icon: Icons.trending_up_rounded,
@@ -274,7 +282,7 @@ class _HomePageState extends State<HomePage> {
                       SizedBox(width: 14),
 
                       Expanded(
-                        child: _MiniInsightCard(
+                        child: MiniInsightCard(
                           title: 'Transfers',
                           value: '24',
                           icon: Icons.swap_horiz_rounded,
@@ -301,7 +309,7 @@ class _HomePageState extends State<HomePage> {
                   /// =====================================================
                   /// LARGE SEND MONEY CARD
                   /// =====================================================
-                  _LargeActionCard(
+                  LargeActionCard(
                     title: 'Send Money',
                     subtitle: 'Transfer funds globally in seconds',
                     icon: Icons.north_east_rounded,
@@ -328,7 +336,7 @@ class _HomePageState extends State<HomePage> {
                   Row(
                     children: [
                       Expanded(
-                        child: _MediumActionCard(
+                        child: MediumActionCard(
                           title: 'Beneficiaries',
                           subtitle: 'Recipients',
                           icon: Icons.group_add_rounded,
@@ -353,7 +361,7 @@ class _HomePageState extends State<HomePage> {
                       const SizedBox(width: 14),
 
                       Expanded(
-                        child: _MediumActionCard(
+                        child: MediumActionCard(
                           title: 'Transactions',
                           subtitle: 'History',
                           icon: Icons.wallet_rounded,
@@ -382,7 +390,7 @@ class _HomePageState extends State<HomePage> {
                   Row(
                     children: [
                       Expanded(
-                        child: _MediumActionCard(
+                        child: MediumActionCard(
                           title: 'Analytics',
                           subtitle: 'Insights',
                           icon: Icons.query_stats_rounded,
@@ -465,7 +473,7 @@ class _HomePageState extends State<HomePage> {
 
                         const SizedBox(height: 24),
 
-                        const _MarketRateTile(
+                        const MarketRateTile(
                           pair: 'USD → INR',
                           rate: '83.42',
                           change: '+0.24%',
@@ -473,7 +481,7 @@ class _HomePageState extends State<HomePage> {
 
                         SizedBox(height: 18),
 
-                        const _MarketRateTile(
+                        const MarketRateTile(
                           pair: 'EUR → USD',
                           rate: '1.08',
                           change: '+0.11%',
@@ -481,7 +489,7 @@ class _HomePageState extends State<HomePage> {
 
                         SizedBox(height: 18),
 
-                        const _MarketRateTile(
+                        const MarketRateTile(
                           pair: 'AED → INR',
                           rate: '22.71',
                           change: '-0.09%',
@@ -505,21 +513,21 @@ class _HomePageState extends State<HomePage> {
 
                   const SizedBox(height: 18),
 
-                  const _RecentActivityTile(
+                  const RecentActivityTile(
                     title: 'Transfer to Alex',
                     subtitle: 'Completed • 2 mins ago',
                   ),
 
                   SizedBox(height: 12),
 
-                  const _RecentActivityTile(
+                  const RecentActivityTile(
                     title: 'USD → AED Exchange',
                     subtitle: 'Processing • 10 mins ago',
                   ),
 
                   SizedBox(height: 12),
 
-                  const _RecentActivityTile(
+                  const RecentActivityTile(
                     title: 'INR Wallet Topup',
                     subtitle: 'Completed • Today',
                   ),
@@ -539,409 +547,6 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 20),
                 ],
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TopActionButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _TopActionButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-
-      child: Container(
-        width: 54,
-        height: 54,
-
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-
-          color: AppColors.getCardColor(context),
-
-          border: Border.all(color: AppColors.getBorderColor(context)),
-        ),
-
-        child: Icon(icon),
-      ),
-    );
-  }
-}
-
-class _LargeActionCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _LargeActionCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-
-      child: Container(
-        width: double.infinity,
-
-        padding: const EdgeInsets.all(24),
-
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(32),
-
-          gradient: AppColors.primaryGradient,
-        ),
-
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-
-                children: [
-                  Text(
-                    title,
-
-                    style: AppTextStyles.headingMedium.copyWith(
-                      color: Colors.white,
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Text(
-                    subtitle,
-
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            Container(
-              padding: const EdgeInsets.all(16),
-
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.14),
-              ),
-
-              child: Icon(icon, color: Colors.white, size: 28),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MediumActionCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _MediumActionCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-
-      child: Container(
-        height: 168,
-
-        padding: const EdgeInsets.all(20),
-
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(28),
-
-          color: AppColors.getCardColor(context),
-
-          border: Border.all(color: AppColors.getBorderColor(context)),
-        ),
-
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-
-          children: [
-            Container(
-              padding: const EdgeInsets.all(14),
-
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-
-                gradient: AppColors.primaryGradient,
-              ),
-
-              child: Icon(icon, color: Colors.white),
-            ),
-
-            const Spacer(),
-
-            Text(title, style: AppTextStyles.headingSmall),
-
-            const SizedBox(height: 4),
-
-            Text(subtitle, style: AppTextStyles.bodySmall),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MiniInsightCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-
-  const _MiniInsightCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-
-        color: AppColors.getCardColor(context),
-
-        border: Border.all(color: AppColors.getBorderColor(context)),
-      ),
-
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-
-              color: AppColors.primary.withOpacity(0.12),
-            ),
-
-            child: Icon(icon, color: AppColors.primary),
-          ),
-
-          const SizedBox(width: 14),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-
-              children: [
-                Text(title, style: AppTextStyles.bodySmall),
-
-                const SizedBox(height: 4),
-
-                Text(
-                  value,
-
-                  style: AppTextStyles.headingSmall.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _QuickStat extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _QuickStat({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          value,
-
-          style: AppTextStyles.headingSmall.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-
-        const SizedBox(height: 4),
-
-        Text(
-          label,
-
-          style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
-        ),
-      ],
-    );
-  }
-}
-
-class _CurrencyChip extends StatelessWidget {
-  final String label;
-
-  const _CurrencyChip({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(100),
-
-        color: Colors.white.withOpacity(0.14),
-      ),
-
-      child: Text(
-        label,
-
-        style: AppTextStyles.bodySmall.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-}
-
-class _MarketRateTile extends StatelessWidget {
-  final String pair;
-  final String rate;
-  final String change;
-
-  const _MarketRateTile({
-    required this.pair,
-    required this.rate,
-    required this.change,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isPositive = change.contains('+');
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-
-          children: [
-            Text(pair, style: AppTextStyles.headingSmall),
-
-            const SizedBox(height: 4),
-
-            Text('Live interbank rate', style: AppTextStyles.bodySmall),
-          ],
-        ),
-
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-
-          children: [
-            Text(
-              rate,
-
-              style: AppTextStyles.headingSmall.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-
-            const SizedBox(height: 4),
-
-            Text(
-              change,
-
-              style: AppTextStyles.bodySmall.copyWith(
-                color: isPositive ? AppColors.success : AppColors.error,
-
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _RecentActivityTile extends StatelessWidget {
-  final String title;
-  final String subtitle;
-
-  const _RecentActivityTile({required this.title, required this.subtitle});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-
-        color: AppColors.getCardColor(context),
-
-        border: Border.all(color: AppColors.getBorderColor(context)),
-      ),
-
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-
-              color: AppColors.primary.withOpacity(0.12),
-            ),
-
-            child: const Icon(Icons.sync_alt_rounded, color: AppColors.primary),
-          ),
-
-          const SizedBox(width: 14),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-
-              children: [
-                Text(title, style: AppTextStyles.bodyLarge),
-
-                const SizedBox(height: 4),
-
-                Text(subtitle, style: AppTextStyles.bodySmall),
-              ],
             ),
           ),
         ],

@@ -49,6 +49,7 @@ class AuthSessionModel extends AuthSession {
     );
   }
 
+  @override
   AuthSessionModel copyWith({
     String? accessToken,
     String? refreshToken,

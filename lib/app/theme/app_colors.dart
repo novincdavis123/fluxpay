@@ -192,6 +192,5 @@ class AppColors {
   /// LEGACY SUPPORT
   /// =========================================================
 
-  /// Keeps old code working
   static Color get card => cardDark;
 }
