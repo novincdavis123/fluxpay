@@ -18,7 +18,7 @@ import 'package:fluxpay/features/auth/presentation/bloc/auth_state.dart';
 
 import 'package:fluxpay/features/beneficiaries/presentation/bloc/beneficiary_bloc.dart';
 
-import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc/exchange_bloc.dart';
+import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc.dart';
 
 import 'package:fluxpay/features/settings/presentation/bloc/settings_bloc.dart';
 import 'package:fluxpay/features/settings/presentation/bloc/settings_event.dart';
@@ -139,6 +139,12 @@ SESSION => ${state.session != null}
 
             child: BlocBuilder<SettingsBloc, SettingsState>(
               builder: (context, settingsState) {
+                debugPrint('''
+=========== THEME REBUILD ===========
+IS DARK => ${settingsState.settings.isDarkMode}
+THEME MODE => ${settingsState.themeMode}
+====================================
+''');
                 return SessionWrapper(
                   child: MaterialApp(
                     title: 'FluxPay',

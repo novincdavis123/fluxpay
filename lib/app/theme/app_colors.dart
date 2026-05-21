@@ -59,13 +59,17 @@ class AppColors {
   /// BRAND COLORS
   /// =========================================================
 
-  static const Color primary = Color(0xFF4F46E5);
+  static const Color primary = Color(0xFF1E40AF); // Deep Royal Blue (Primary)
 
-  static const Color primaryLight = Color(0xFF6366F1);
+  static const Color primaryLight = Color(
+    0xFF3B82F6,
+  ); // Vibrant Blue (Primary Light)
 
-  static const Color secondary = Color(0xFF06B6D4);
+  static const Color secondary = Color(
+    0xFF0EA5E9,
+  ); // Bright Sky Blue (Secondary)
 
-  static const Color accent = Color(0xFF8B5CF6);
+  static const Color accent = Color(0xFF60A5FA); // Soft Light Blue (Accent)
 
   /// =========================================================
   /// STATUS COLORS
@@ -93,7 +97,7 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
 
-    colors: [Color(0xFF6366F1), Color(0xFF4F46E5), Color(0xFF4338CA)],
+    colors: [Color(0xFF3B82F6), Color(0xFF2563EB), Color(0xFF1D4ED8)],
   );
 
   static const LinearGradient secondaryGradient = LinearGradient(

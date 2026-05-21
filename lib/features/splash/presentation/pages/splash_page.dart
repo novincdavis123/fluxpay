@@ -22,10 +22,6 @@ class _SplashPageState extends State<SplashPage>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
-  late final Animation<double> _scaleAnimation;
-
-  late final Animation<double> _fadeAnimation;
-
   @override
   void initState() {
     super.initState();
@@ -50,16 +46,6 @@ class _SplashPageState extends State<SplashPage>
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     );
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.92,
-      end: 1,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
-
-    _fadeAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
 
     _controller.forward();
   }
@@ -91,104 +77,68 @@ class _SplashPageState extends State<SplashPage>
 
         body: SafeArea(
           child: Center(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
 
-              child: ScaleTransition(
-                scale: _scaleAnimation,
+              children: [
+                /// =====================================================
+                /// LOGO
+                /// =====================================================
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(40),
 
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-
-                  children: [
-                    /// =====================================================
-                    /// LOGO
-                    /// =====================================================
-                    Container(
-                      width: 132,
-                      height: 132,
-
-                      padding: const EdgeInsets.all(18),
-
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-
-                          colors: [
-                            AppColors.primary.withOpacity(0.18),
-                            AppColors.primary.withOpacity(0.06),
-                          ],
-                        ),
-
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.08),
-                        ),
-
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withOpacity(0.18),
-                            blurRadius: 40,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(40),
-
-                        child: Image.asset(
-                          'assets/icons/fxicon.png',
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 36),
-
-                    /// =====================================================
-                    /// TITLE
-                    /// =====================================================
-                    Text(
-                      'FluxPay',
-                      style: AppTextStyles.displayMedium.copyWith(
-                        letterSpacing: -1,
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    /// =====================================================
-                    /// SUBTITLE
-                    /// =====================================================
-                    Text(
-                      'Global Remittance Platform',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white70,
-                      ),
-                    ),
-
-                    const SizedBox(height: 48),
-
-                    /// =====================================================
-                    /// LOADER
-                    /// =====================================================
-                    Container(
-                      width: 34,
-                      height: 34,
-
-                      padding: const EdgeInsets.all(4),
-
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2.4,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ],
+                  child: Image.asset(
+                    'assets/icons/fxicon.png',
+                    fit: BoxFit.cover,
+                    width: 132,
+                    height: 132,
+                  ),
                 ),
-              ),
+
+                const SizedBox(height: 36),
+
+                /// =====================================================
+                /// TITLE
+                /// =====================================================
+                Text(
+                  'FluxPay',
+
+                  style: AppTextStyles.displayMedium.copyWith(
+                    letterSpacing: -1,
+                    color: AppColors.getTextPrimary(context),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                /// =====================================================
+                /// SUBTITLE
+                /// =====================================================
+                Text(
+                  'Global Remittance Platform',
+
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.getTextSecondary(context),
+                  ),
+                ),
+
+                const SizedBox(height: 48),
+
+                /// =====================================================
+                /// LOADER
+                /// =====================================================
+                Container(
+                  width: 34,
+                  height: 34,
+
+                  padding: const EdgeInsets.all(4),
+
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

@@ -283,7 +283,10 @@ class _TransactionPageState extends State<TransactionPage> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                           ),
-                          child: const Text('Apply'),
+                          child: const Text(
+                            'Apply',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ),
                     ],
@@ -317,6 +320,7 @@ class _TransactionPageState extends State<TransactionPage> {
             appBar: AppBar(
               elevation: 0,
               backgroundColor: Colors.transparent,
+              surfaceTintColor: AppColors.getBackground(context),
               centerTitle: false,
               title: Text(
                 'Transactions',

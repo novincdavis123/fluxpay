@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluxpay/app/theme/app_colors.dart';
 
 import 'package:fluxpay/app/theme/app_spacing.dart';
 import 'package:fluxpay/app/theme/app_text_styles.dart';
@@ -53,8 +54,8 @@ class _AddBeneficiaryBottomSheetState extends State<AddBeneficiaryBottomSheet> {
       builder: (context, scrollController) {
         return Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: const BoxDecoration(
-            color: Color(0xFF161B22),
+          decoration: BoxDecoration(
+            color: AppColors.getBackground(context),
             borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
           ),
           child: SingleChildScrollView(
@@ -152,7 +153,10 @@ class _AddBeneficiaryBottomSheetState extends State<AddBeneficiaryBottomSheet> {
 
                         Navigator.pop(context);
                       },
-                      child: const Text('Save Beneficiary'),
+                      child: const Text(
+                        'Save Beneficiary',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
                 ],

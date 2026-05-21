@@ -305,7 +305,6 @@ class _SecuritySetupPageState extends State<SecuritySetupPage> {
                                       maxLength: 4,
 
                                       style: const TextStyle(
-                                        color: Colors.white,
                                         letterSpacing: 10,
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
@@ -317,15 +316,10 @@ class _SecuritySetupPageState extends State<SecuritySetupPage> {
                                         counterText: '',
 
                                         hintStyle: const TextStyle(
-                                          color: Colors.white24,
                                           letterSpacing: 10,
                                         ),
 
                                         filled: true,
-
-                                        fillColor: Colors.white.withOpacity(
-                                          0.04,
-                                        ),
 
                                         border: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(
@@ -337,7 +331,6 @@ class _SecuritySetupPageState extends State<SecuritySetupPage> {
 
                                         prefixIcon: const Icon(
                                           Icons.pin_outlined,
-                                          color: Colors.white54,
                                         ),
                                       ),
                                     ),

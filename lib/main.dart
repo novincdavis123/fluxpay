@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluxpay/features/auth/presentation/bloc/auth_event.dart';
 
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -12,6 +10,8 @@ import 'package:fluxpay/core/lifecycle/app_lifecycle_handler.dart';
 
 import 'package:fluxpay/features/auth/presentation/bloc/auth_bloc.dart';
 
+import 'package:fluxpay/features/beneficiaries/data/models/beneficiary_hive_model.dart';
+
 import 'package:fluxpay/features/exchange/data/models/exchange_rate_model.dart';
 
 import 'package:fluxpay/features/settings/data/models/settings_model.dart';
@@ -19,8 +19,6 @@ import 'package:fluxpay/features/settings/data/models/settings_model.dart';
 import 'package:fluxpay/features/transactions/data/models/transaction_model.dart';
 
 import 'package:fluxpay/features/transactions/domain/entities/transaction_status.dart';
-
-import 'package:fluxpay/features/beneficiaries/data/models/beneficiary_hive_model.dart';
 
 import 'package:fluxpay/injection_container.dart';
 
@@ -73,7 +71,6 @@ Future<void> main() async {
     Hive.registerAdapter(ExchangeRateModelAdapter());
   }
 
-  /// BENEFICIARY HIVE MODEL ADAPTER
   if (!Hive.isAdapterRegistered(4)) {
     Hive.registerAdapter(BeneficiaryHiveModelAdapter());
   }
@@ -83,16 +80,27 @@ Future<void> main() async {
   /// ======================================================
 
   await Future.wait([
-    /// FIXED
-    /// ALWAYS USE SAME TYPE EVERYWHERE
     Hive.openBox<BeneficiaryHiveModel>(HiveBoxes.beneficiaries),
 
     Hive.openBox<TransactionModel>(HiveBoxes.transactions),
 
     Hive.openBox<ExchangeRateModel>(HiveBoxes.exchangeRates),
 
+    /// IMPORTANT FIX
     Hive.openBox<SettingsModel>(HiveBoxes.settings),
   ]);
+
+  /// ======================================================
+  /// VERIFY SETTINGS BOX
+  /// ======================================================
+
+  debugPrint('''
+═══════════════════════════════════
+SETTINGS BOX OPENED
+BOX => ${HiveBoxes.settings}
+OPEN => ${Hive.isBoxOpen(HiveBoxes.settings)}
+═══════════════════════════════════
+''');
 
   /// ======================================================
   /// DEPENDENCY INJECTION
@@ -101,7 +109,7 @@ Future<void> main() async {
   await initDependencies();
 
   /// ======================================================
-  /// APP LIFECYCLE LOCKING
+  /// APP LIFECYCLE
   /// ======================================================
 
   final authBloc = sl<AuthBloc>();

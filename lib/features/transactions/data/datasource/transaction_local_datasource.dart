@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:fluxpay/core/constants/hive_boxes.dart';
 import 'package:hive/hive.dart';
-
-import 'package:fluxpay/core/constants/storage_constants.dart';
 
 import 'package:fluxpay/features/transactions/data/models/transaction_model.dart';
 
@@ -14,7 +13,7 @@ abstract class TransactionLocalDataSource {
 }
 
 class TransactionLocalDataSourceImpl implements TransactionLocalDataSource {
-  static const String _boxName = StorageConstants.transactionsBox;
+  static const String _boxName = HiveBoxes.transactions;
 
   /// ======================================================
   /// SAFE BOX ACCESS

@@ -8,7 +8,6 @@ import 'package:fluxpay/app/theme/app_spacing.dart';
 import 'package:fluxpay/app/theme/app_text_styles.dart';
 
 import 'package:fluxpay/core/utils/haptics.dart';
-import 'package:fluxpay/shared/widgets/common/app_scaffold.dart';
 
 import 'package:fluxpay/features/analytics/domain/services/analytics_service.dart';
 
@@ -21,8 +20,6 @@ class AnalyticsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     final cardColor = AppColors.getCardColor(context);
 
     final primaryText = AppColors.getTextPrimary(context);
@@ -37,8 +34,8 @@ class AnalyticsPage extends StatelessWidget {
 
         final monthlyVolume = summary.monthlyVolume;
 
-        return AppScaffold(
-          child: RefreshIndicator(
+        return Scaffold(
+          body: RefreshIndicator(
             color: AppColors.primary,
             backgroundColor: cardColor,
             onRefresh: () async {

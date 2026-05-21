@@ -14,14 +14,11 @@ import 'package:fluxpay/features/beneficiaries/presentation/bloc/beneficiary_eve
 import 'package:fluxpay/features/beneficiaries/presentation/pages/beneficiary_page.dart';
 
 import 'package:fluxpay/features/exchange/presentation/pages/exchange_page.dart';
-import 'package:fluxpay/features/settings/presentation/pages/profile.dart'
-    hide Navigator;
+import 'package:fluxpay/features/settings/presentation/pages/profile.dart';
 
 import 'package:fluxpay/features/settings/presentation/pages/settings_page.dart';
 
 import 'package:fluxpay/features/transactions/presentation/pages/transaction_page.dart';
-
-import 'package:fluxpay/shared/widgets/common/app_scaffold.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -50,379 +47,383 @@ class _HomePageState extends State<HomePage> {
 
     final secondaryText = AppColors.getTextSecondary(context);
 
-    return AppScaffold(
-      backgroundColor: AppColors.getBackground(context),
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: AppColors.getBackground(context),
 
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
 
-          children: [
-            /// =====================================================
-            /// HEADER
-            /// =====================================================
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-
-                  children: [
-                    ShaderMask(
-                      shaderCallback: (bounds) {
-                        return AppColors.primaryGradient.createShader(bounds);
-                      },
-
-                      child: Text(
-                        'FluxPay',
-
-                        style: AppTextStyles.displayMedium.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSpacing.xs),
-
-                    Text(
-                      'Global Remittance Platform',
-
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: secondaryText,
-                      ),
-                    ),
-                  ],
-                ),
-
-                Row(
-                  children: [
-                    /// SETTINGS BUTTON
-                    _TopActionButton(
-                      icon: Icons.settings_rounded,
-
-                      onTap: () async {
-                        await AppHaptics.selection();
-
-                        if (!context.mounted) {
-                          return;
-                        }
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const SettingsPage(),
-                          ),
-                        );
-                      },
-                    ),
-
-                    const SizedBox(width: AppSpacing.sm),
-
-                    /// PROFILE
-                    _TopActionButton(
-                      icon: Icons.person_outline_rounded,
-
-                      onTap: () async {
-                        await AppHaptics.selection();
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const ProfilePage(),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-
-            const SizedBox(height: AppSpacing.xxl),
-
-            /// =====================================================
-            /// BALANCE CARD
-            /// =====================================================
-            Container(
-              width: double.infinity,
-
-              padding: const EdgeInsets.all(AppSpacing.xl),
-
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(36),
-
-                gradient: AppColors.primaryGradient,
-
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withOpacity(0.35),
-                    blurRadius: 30,
-                    offset: const Offset(0, 18),
-                  ),
-                ],
-              ),
-
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// =====================================================
+              /// HEADER
+              /// =====================================================
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                 children: [
-                  Text(
-                    'Total Balance',
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
 
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Colors.white70,
-                    ),
-                  ),
+                    children: [
+                      ShaderMask(
+                        shaderCallback: (bounds) {
+                          return AppColors.primaryGradient.createShader(bounds);
+                        },
 
-                  const SizedBox(height: AppSpacing.sm),
+                        child: Text(
+                          'FluxPay',
 
-                  Text(
-                    '\$24,860.45',
+                          style: AppTextStyles.displayMedium.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
 
-                    style: AppTextStyles.displayLarge.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
+                      const SizedBox(height: AppSpacing.xs),
 
-                  const SizedBox(height: AppSpacing.lg),
+                      Text(
+                        'Global Remittance Platform',
 
-                  Row(
-                    children: const [
-                      _CurrencyChip(label: 'USD Wallet'),
-
-                      SizedBox(width: AppSpacing.sm),
-
-                      _CurrencyChip(label: 'INR Wallet'),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: secondaryText,
+                        ),
+                      ),
                     ],
                   ),
-                ],
-              ),
-            ),
 
-            const SizedBox(height: AppSpacing.xxl),
-
-            /// =====================================================
-            /// QUICK ACTIONS
-            /// =====================================================
-            Text(
-              'Quick Actions',
-
-              style: AppTextStyles.headingMedium.copyWith(color: primaryText),
-            ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            GridView.count(
-              crossAxisCount: 2,
-
-              shrinkWrap: true,
-
-              physics: const NeverScrollableScrollPhysics(),
-
-              crossAxisSpacing: AppSpacing.md,
-
-              mainAxisSpacing: AppSpacing.md,
-
-              childAspectRatio: 1.05,
-
-              children: [
-                _ActionCard(
-                  title: 'Send Money',
-
-                  subtitle: 'Start transfer',
-
-                  icon: Icons.send_rounded,
-
-                  backgroundColor: cardColor,
-
-                  onTap: () async {
-                    await AppHaptics.selection();
-
-                    if (!context.mounted) {
-                      return;
-                    }
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ExchangePage()),
-                    );
-                  },
-                ),
-
-                _ActionCard(
-                  title: 'Beneficiaries',
-
-                  subtitle: 'Manage recipients',
-
-                  icon: Icons.people_alt_rounded,
-
-                  backgroundColor: cardColor,
-
-                  onTap: () async {
-                    await AppHaptics.selection();
-
-                    if (!context.mounted) {
-                      return;
-                    }
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const BeneficiaryPage(),
-                      ),
-                    );
-                  },
-                ),
-
-                _ActionCard(
-                  title: 'Transactions',
-
-                  subtitle: 'Transfer history',
-
-                  icon: Icons.receipt_long_rounded,
-
-                  backgroundColor: cardColor,
-
-                  onTap: () async {
-                    await AppHaptics.selection();
-
-                    if (!context.mounted) {
-                      return;
-                    }
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const TransactionPage(),
-                      ),
-                    );
-                  },
-                ),
-
-                _ActionCard(
-                  title: 'Analytics',
-
-                  subtitle: 'Spending insights',
-
-                  icon: Icons.bar_chart_rounded,
-
-                  backgroundColor: cardColor,
-
-                  onTap: () async {
-                    await AppHaptics.selection();
-
-                    if (!context.mounted) {
-                      return;
-                    }
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const AnalyticsPage()),
-                    );
-                  },
-                ),
-              ],
-            ),
-
-            const SizedBox(height: AppSpacing.xxl),
-
-            /// =====================================================
-            /// LIVE FX MARKET
-            /// =====================================================
-            Container(
-              width: double.infinity,
-
-              padding: const EdgeInsets.all(AppSpacing.xl),
-
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-
-                color: cardColor,
-
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(isDark ? 0.20 : 0.04),
-                    blurRadius: 16,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-
-                children: [
                   Row(
                     children: [
-                      Container(
-                        width: 10,
-                        height: 10,
+                      /// SETTINGS BUTTON
+                      _TopActionButton(
+                        icon: Icons.settings_rounded,
 
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.green,
-                        ),
+                        onTap: () async {
+                          await AppHaptics.selection();
+
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SettingsPage(),
+                            ),
+                          );
+                        },
                       ),
 
                       const SizedBox(width: AppSpacing.sm),
 
-                      Text(
-                        'Live FX Market',
+                      /// PROFILE
+                      _TopActionButton(
+                        icon: Icons.person_outline_rounded,
 
-                        style: AppTextStyles.headingSmall.copyWith(
-                          color: primaryText,
-                        ),
+                        onTap: () async {
+                          await AppHaptics.selection();
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ProfilePage(),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
+                ],
+              ),
 
-                  const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.xxl),
 
-                  const _MarketRateTile(
-                    pair: 'USD → INR',
-                    rate: '83.42',
-                    change: '+0.24%',
+              /// =====================================================
+              /// BALANCE CARD
+              /// =====================================================
+              Container(
+                width: double.infinity,
+
+                padding: const EdgeInsets.all(AppSpacing.xl),
+
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(36),
+
+                  gradient: AppColors.primaryGradient,
+
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.35),
+                      blurRadius: 30,
+                      offset: const Offset(0, 18),
+                    ),
+                  ],
+                ),
+
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+
+                  children: [
+                    Text(
+                      'Total Balance',
+
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: Colors.white70,
+                      ),
+                    ),
+
+                    const SizedBox(height: AppSpacing.sm),
+
+                    Text(
+                      '\$24,860.45',
+
+                      style: AppTextStyles.displayLarge.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+
+                    const SizedBox(height: AppSpacing.lg),
+
+                    Row(
+                      children: const [
+                        _CurrencyChip(label: 'USD Wallet'),
+
+                        SizedBox(width: AppSpacing.sm),
+
+                        _CurrencyChip(label: 'INR Wallet'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.xxl),
+
+              /// =====================================================
+              /// QUICK ACTIONS
+              /// =====================================================
+              Text(
+                'Quick Actions',
+
+                style: AppTextStyles.headingMedium.copyWith(color: primaryText),
+              ),
+
+              const SizedBox(height: AppSpacing.lg),
+
+              GridView.count(
+                crossAxisCount: 2,
+
+                shrinkWrap: true,
+
+                physics: const NeverScrollableScrollPhysics(),
+
+                crossAxisSpacing: AppSpacing.md,
+
+                mainAxisSpacing: AppSpacing.md,
+
+                childAspectRatio: 1.05,
+
+                children: [
+                  _ActionCard(
+                    title: 'Send Money',
+
+                    subtitle: 'Start transfer',
+
+                    icon: Icons.send_rounded,
+
+                    backgroundColor: cardColor,
+
+                    onTap: () async {
+                      await AppHaptics.selection();
+
+                      if (!context.mounted) {
+                        return;
+                      }
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ExchangePage()),
+                      );
+                    },
                   ),
 
-                  const SizedBox(height: AppSpacing.lg),
+                  _ActionCard(
+                    title: 'Beneficiaries',
 
-                  const _MarketRateTile(
-                    pair: 'EUR → USD',
-                    rate: '1.08',
-                    change: '+0.11%',
+                    subtitle: 'Manage recipients',
+
+                    icon: Icons.people_alt_rounded,
+
+                    backgroundColor: cardColor,
+
+                    onTap: () async {
+                      await AppHaptics.selection();
+
+                      if (!context.mounted) {
+                        return;
+                      }
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const BeneficiaryPage(),
+                        ),
+                      );
+                    },
                   ),
 
-                  const SizedBox(height: AppSpacing.lg),
+                  _ActionCard(
+                    title: 'Transactions',
 
-                  const _MarketRateTile(
-                    pair: 'AED → INR',
-                    rate: '22.71',
-                    change: '-0.09%',
+                    subtitle: 'Transfer history',
+
+                    icon: Icons.receipt_long_rounded,
+
+                    backgroundColor: cardColor,
+
+                    onTap: () async {
+                      await AppHaptics.selection();
+
+                      if (!context.mounted) {
+                        return;
+                      }
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const TransactionPage(),
+                        ),
+                      );
+                    },
+                  ),
+
+                  _ActionCard(
+                    title: 'Analytics',
+
+                    subtitle: 'Spending insights',
+
+                    icon: Icons.bar_chart_rounded,
+
+                    backgroundColor: cardColor,
+
+                    onTap: () async {
+                      await AppHaptics.selection();
+
+                      if (!context.mounted) {
+                        return;
+                      }
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AnalyticsPage(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
-            ),
 
-            const SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.xxl),
 
-            /// =====================================================
-            /// FOOTER
-            /// =====================================================
-            Center(
-              child: Text(
-                'Powered by FluxPay FX Engine',
+              /// =====================================================
+              /// LIVE FX MARKET
+              /// =====================================================
+              Container(
+                width: double.infinity,
 
-                style: AppTextStyles.bodySmall.copyWith(color: secondaryText),
+                padding: const EdgeInsets.all(AppSpacing.xl),
+
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30),
+
+                  color: cardColor,
+
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(isDark ? 0.20 : 0.04),
+                      blurRadius: 16,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 10,
+                          height: 10,
+
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.green,
+                          ),
+                        ),
+
+                        const SizedBox(width: AppSpacing.sm),
+
+                        Text(
+                          'Live FX Market',
+
+                          style: AppTextStyles.headingSmall.copyWith(
+                            color: primaryText,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: AppSpacing.xl),
+
+                    const _MarketRateTile(
+                      pair: 'USD → INR',
+                      rate: '83.42',
+                      change: '+0.24%',
+                    ),
+
+                    const SizedBox(height: AppSpacing.lg),
+
+                    const _MarketRateTile(
+                      pair: 'EUR → USD',
+                      rate: '1.08',
+                      change: '+0.11%',
+                    ),
+
+                    const SizedBox(height: AppSpacing.lg),
+
+                    const _MarketRateTile(
+                      pair: 'AED → INR',
+                      rate: '22.71',
+                      change: '-0.09%',
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: AppSpacing.xl),
-          ],
+              const SizedBox(height: AppSpacing.xxl),
+
+              /// =====================================================
+              /// FOOTER
+              /// =====================================================
+              Center(
+                child: Text(
+                  'Powered by FluxPay FX Engine',
+
+                  style: AppTextStyles.bodySmall.copyWith(color: secondaryText),
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.xl),
+            ],
+          ),
         ),
       ),
     );

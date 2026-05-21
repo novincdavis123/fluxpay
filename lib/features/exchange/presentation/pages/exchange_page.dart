@@ -13,9 +13,9 @@ import 'package:fluxpay/core/utils/app_snackbar.dart';
 import 'package:fluxpay/core/utils/money_formatter.dart';
 import 'package:fluxpay/core/widgets/offline_empty_state.dart';
 
-import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc/exchange_bloc.dart';
-import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc/exchange_event.dart';
-import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc/exchange_state.dart';
+import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc.dart';
+import 'package:fluxpay/features/exchange/presentation/bloc/exchange_event.dart';
+import 'package:fluxpay/features/exchange/presentation/bloc/exchange_state.dart';
 
 class ExchangePage extends StatefulWidget {
   const ExchangePage({super.key});

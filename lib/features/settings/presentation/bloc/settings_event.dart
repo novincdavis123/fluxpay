@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 /// BASE EVENT
 /// ======================================================
 
-abstract class SettingsEvent extends Equatable {
+sealed class SettingsEvent extends Equatable {
   const SettingsEvent();
 
   @override
@@ -16,7 +16,7 @@ abstract class SettingsEvent extends Equatable {
 /// LOAD SETTINGS
 /// ======================================================
 
-class LoadSettings extends SettingsEvent {
+final class LoadSettings extends SettingsEvent {
   const LoadSettings();
 }
 
@@ -24,7 +24,7 @@ class LoadSettings extends SettingsEvent {
 /// THEME
 /// ======================================================
 
-class ToggleTheme extends SettingsEvent {
+final class ToggleTheme extends SettingsEvent {
   final bool enabled;
 
   const ToggleTheme(this.enabled);
@@ -33,7 +33,7 @@ class ToggleTheme extends SettingsEvent {
   List<Object?> get props => [enabled];
 }
 
-class ChangeThemeMode extends SettingsEvent {
+final class ChangeThemeMode extends SettingsEvent {
   final ThemeMode themeMode;
 
   const ChangeThemeMode(this.themeMode);
@@ -46,7 +46,7 @@ class ChangeThemeMode extends SettingsEvent {
 /// NOTIFICATIONS
 /// ======================================================
 
-class ToggleNotifications extends SettingsEvent {
+final class ToggleNotifications extends SettingsEvent {
   final bool enabled;
 
   const ToggleNotifications(this.enabled);
@@ -59,7 +59,7 @@ class ToggleNotifications extends SettingsEvent {
 /// BIOMETRICS
 /// ======================================================
 
-class ToggleBiometrics extends SettingsEvent {
+final class ToggleBiometrics extends SettingsEvent {
   final bool enabled;
 
   const ToggleBiometrics(this.enabled);
@@ -72,7 +72,7 @@ class ToggleBiometrics extends SettingsEvent {
 /// DEFAULT CURRENCY
 /// ======================================================
 
-class ChangeCurrency extends SettingsEvent {
+final class ChangeCurrency extends SettingsEvent {
   final String currency;
 
   const ChangeCurrency(this.currency);
@@ -85,7 +85,7 @@ class ChangeCurrency extends SettingsEvent {
 /// ANALYTICS
 /// ======================================================
 
-class ToggleAnalytics extends SettingsEvent {
+final class ToggleAnalytics extends SettingsEvent {
   final bool enabled;
 
   const ToggleAnalytics(this.enabled);
@@ -98,6 +98,6 @@ class ToggleAnalytics extends SettingsEvent {
 /// CLEAR ERROR
 /// ======================================================
 
-class ClearSettingsError extends SettingsEvent {
+final class ClearSettingsError extends SettingsEvent {
   const ClearSettingsError();
 }

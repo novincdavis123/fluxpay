@@ -2,10 +2,10 @@ import 'package:dio/dio.dart';
 
 import 'package:flutter/foundation.dart';
 
-import 'package:fluxpay/core/network/token_storage.dart';
+import 'package:fluxpay/core/security/secure_storage_service.dart';
 
 class AuthInterceptor extends Interceptor {
-  final TokenStorage tokenStorage;
+  final SecureStorageService tokenStorage;
 
   AuthInterceptor({required this.tokenStorage});
 
@@ -15,7 +15,7 @@ class AuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     try {
-      final token = await tokenStorage.accessToken;
+      final token = await tokenStorage.getToken();
 
       if (token != null && token.isNotEmpty) {
         options.headers['Authorization'] = 'Bearer $token';

@@ -2,19 +2,19 @@ import '../entities/settings_entity.dart';
 
 abstract class SettingsRepository {
   /// ======================================================
-  /// GET SETTINGS
+  /// LOAD SETTINGS
   /// ======================================================
 
   Future<SettingsEntity> getSettings();
 
   /// ======================================================
-  /// SAVE ENTIRE SETTINGS OBJECT
+  /// SAVE FULL SETTINGS
   /// ======================================================
 
   Future<void> saveSettings(SettingsEntity settings);
 
   /// ======================================================
-  /// INDIVIDUAL UPDATE METHODS
+  /// UPDATE INDIVIDUAL SETTINGS
   /// ======================================================
 
   Future<void> updateTheme(bool isDarkMode);
@@ -28,8 +28,16 @@ abstract class SettingsRepository {
   Future<void> updateCurrency(String currency);
 
   /// ======================================================
-  /// RESET SETTINGS
+  /// RESET
   /// ======================================================
 
   Future<void> resetSettings();
+
+  /// ======================================================
+  /// OPTIONAL HELPERS
+  /// ======================================================
+
+  Future<bool> isDarkModeEnabled();
+
+  Future<String> getDefaultCurrency();
 }

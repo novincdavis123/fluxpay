@@ -97,6 +97,24 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   /// ======================================================
+  /// HELPERS
+  /// ======================================================
+
+  @override
+  Future<bool> isDarkModeEnabled() async {
+    final settings = await getSettings();
+
+    return settings.isDarkMode;
+  }
+
+  @override
+  Future<String> getDefaultCurrency() async {
+    final settings = await getSettings();
+
+    return settings.defaultCurrency;
+  }
+
+  /// ======================================================
   /// RESET SETTINGS
   /// ======================================================
 

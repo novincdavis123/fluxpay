@@ -8,7 +8,6 @@ import 'package:fluxpay/app/theme/app_text_styles.dart';
 import 'package:fluxpay/core/utils/app_snackbar.dart';
 import 'package:fluxpay/core/utils/haptics.dart';
 import 'package:fluxpay/core/widgets/animated_empty_state.dart';
-import 'package:fluxpay/shared/widgets/common/app_scaffold.dart';
 
 import '../bloc/beneficiary_bloc.dart';
 import '../bloc/beneficiary_event.dart';
@@ -133,8 +132,6 @@ class _BeneficiaryPageState extends State<BeneficiaryPage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final primaryText = AppColors.getTextPrimary(context);
-
     final secondaryText = AppColors.getTextSecondary(context);
 
     final cardColor = AppColors.getCardColor(context);
@@ -149,29 +146,8 @@ class _BeneficiaryPageState extends State<BeneficiaryPage> {
         }
       },
 
-      child: AppScaffold(
-        // floatingActionButton: FloatingActionButton.extended(
-        //   backgroundColor: AppColors.primary,
-        //   foregroundColor: Colors.white,
-        //   elevation: 0,
-
-        //   onPressed: _showAddBeneficiarySheet,
-
-        //   shape: RoundedRectangleBorder(
-        //     borderRadius: BorderRadius.circular(18),
-        //   ),
-
-        //   icon: const Icon(Icons.add_rounded),
-
-        //   label: Text(
-        //     'Add Beneficiary',
-        //     style: AppTextStyles.bodyMedium.copyWith(
-        //       color: Colors.white,
-        //       fontWeight: FontWeight.w600,
-        //     ),
-        //   ),
-        // ),
-        child: SafeArea(
+      child: Scaffold(
+        body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
 

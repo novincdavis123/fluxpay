@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:fluxpay/app/theme/app_colors.dart';
 import 'package:fluxpay/app/theme/app_text_styles.dart';
+import 'package:fluxpay/core/validators/auth_validators.dart';
 
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
@@ -23,7 +24,6 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
 
   bool _obscurePassword = true;
-  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -34,16 +34,15 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  // =====================================================
+  /// SUBMIT
+  /// =====================================================
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
 
     if (!_formKey.currentState!.validate()) {
       return;
     }
-
-    setState(() {
-      _isSubmitting = true;
-    });
 
     context.read<AuthBloc>().add(
       LoginRequested(
@@ -65,7 +64,6 @@ STATUS => ${state.status}
 ============================================
 ''');
 
-        /// ONLY SHOW FAILURE
         if (state.status == AuthStatus.failure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -167,6 +165,10 @@ STATUS => ${state.status}
 
                       keyboardType: TextInputType.emailAddress,
 
+                      textInputAction: TextInputAction.next,
+
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+
                       decoration: InputDecoration(
                         hintText: 'john@fluxpay.com',
 
@@ -180,13 +182,7 @@ STATUS => ${state.status}
                         prefixIcon: const Icon(Icons.mail_outline_rounded),
                       ),
 
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Email is required';
-                        }
-
-                        return null;
-                      },
+                      validator: AuthValidators.validateEmail,
                     ),
 
                     const SizedBox(height: 24),
@@ -202,6 +198,12 @@ STATUS => ${state.status}
                       controller: _passwordController,
 
                       obscureText: _obscurePassword,
+
+                      textInputAction: TextInputAction.done,
+
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+
+                      onFieldSubmitted: (_) => _submit(),
 
                       decoration: InputDecoration(
                         hintText: 'Enter password',
@@ -226,31 +228,19 @@ STATUS => ${state.status}
                             _obscurePassword
                                 ? Icons.visibility_off_rounded
                                 : Icons.visibility_rounded,
+
                             color: Colors.white54,
                           ),
                         ),
                       ),
 
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Password is required';
-                        }
-
-                        if (value.length < 6) {
-                          return 'Minimum 6 characters';
-                        }
-
-                        return null;
-                      },
+                      validator: AuthValidators.validatePassword,
                     ),
 
                     const SizedBox(height: 36),
 
                     /// =====================================================
                     /// LOGIN BUTTON
-                    /// IMPORTANT FIX:
-                    /// ONLY REBUILD BUTTON
-                    /// NOT ENTIRE PAGE
                     /// =====================================================
                     BlocSelector<AuthBloc, AuthState, bool>(
                       selector: (state) => state.status == AuthStatus.loading,
@@ -265,7 +255,9 @@ STATUS => ${state.status}
 
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
+
                               foregroundColor: Colors.white,
+
                               elevation: 0,
 
                               shape: RoundedRectangleBorder(
@@ -278,8 +270,11 @@ STATUS => ${state.status}
 
                               child: isLoading
                                   ? const SizedBox(
+                                      key: ValueKey('loader'),
+
                                       width: 22,
                                       height: 22,
+
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2.2,
                                         color: Colors.white,
@@ -287,6 +282,9 @@ STATUS => ${state.status}
                                     )
                                   : Text(
                                       'Continue',
+
+                                      key: const ValueKey('text'),
+
                                       style: AppTextStyles.bodyLarge.copyWith(
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -305,6 +303,7 @@ STATUS => ${state.status}
                     Center(
                       child: Text(
                         'Secure fintech authentication',
+
                         style: AppTextStyles.bodySmall.copyWith(
                           color: Colors.white38,
                         ),

@@ -6,24 +6,15 @@ import 'package:get_it/get_it.dart';
 
 import 'package:local_auth/local_auth.dart';
 
-/// =====================================================
-/// CORE
-/// =====================================================
-
 import 'package:fluxpay/core/connectivity/connectivity_cubit.dart';
 
 import 'package:fluxpay/core/network/dio_client.dart';
-import 'package:fluxpay/core/network/token_storage.dart';
 
 import 'package:fluxpay/core/security/secure_storage_service.dart';
 
 import 'package:fluxpay/core/services/connectivity_service.dart';
 import 'package:fluxpay/core/services/exchange_calculator_service.dart';
 import 'package:fluxpay/core/services/live_rate_simulation_service.dart';
-
-/// =====================================================
-/// AUTH
-/// =====================================================
 
 import 'package:fluxpay/features/auth/data/datasource/auth_local_datasource.dart';
 
@@ -57,7 +48,7 @@ import 'package:fluxpay/features/exchange/data/repositories/exchange_repository_
 
 import 'package:fluxpay/features/exchange/domain/repositories/exchange_repository.dart';
 
-import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc/exchange_bloc.dart';
+import 'package:fluxpay/features/exchange/presentation/bloc/exchange_bloc.dart';
 
 /// =====================================================
 /// BENEFICIARIES
@@ -128,17 +119,11 @@ Future<void> initDependencies() async {
 
   sl.registerLazySingleton<SecureStorageService>(() => SecureStorageService());
 
-  sl.registerLazySingleton<TokenStorage>(
-    () => TokenStorage(secureStorage: sl<FlutterSecureStorage>()),
-  );
-
   /// =====================================================
   /// NETWORK
   /// =====================================================
 
-  sl.registerLazySingleton<DioClient>(
-    () => DioClient(tokenStorage: sl<TokenStorage>()),
-  );
+  sl.registerLazySingleton<DioClient>(() => DioClient());
 
   /// =====================================================
   /// CONNECTIVITY

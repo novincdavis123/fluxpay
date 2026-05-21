@@ -111,13 +111,15 @@ class _AnimatedEmptyStateState extends State<AnimatedEmptyState>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
 
-                      color: Colors.white.withOpacity(0.04),
+                      color: AppColors.borderDark.withOpacity(0.04),
 
-                      border: Border.all(color: Colors.white.withOpacity(0.05)),
+                      border: Border.all(
+                        color: AppColors.borderDark.withOpacity(0.05),
+                      ),
 
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.08),
+                          color: AppColors.borderDark.withOpacity(0.08),
 
                           blurRadius: 40,
                           spreadRadius: 2,
@@ -125,7 +127,11 @@ class _AnimatedEmptyStateState extends State<AnimatedEmptyState>
                       ],
                     ),
 
-                    child: Icon(widget.icon, size: 56, color: Colors.white54),
+                    child: Icon(
+                      widget.icon,
+                      size: 56,
+                      color: AppColors.borderDark,
+                    ),
                   ),
                 ),
 

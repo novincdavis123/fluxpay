@@ -63,7 +63,7 @@ class SettingsState extends Equatable {
 
       isLoading: isLoading ?? this.isLoading,
 
-      error: clearError ? null : error ?? this.error,
+      error: clearError ? null : (error ?? this.error),
     );
   }
 
@@ -71,28 +71,35 @@ class SettingsState extends Equatable {
   /// HELPERS
   /// ======================================================
 
-  bool get isDarkMode {
-    return settings.isDarkMode;
-  }
+  bool get isDarkMode => settings.isDarkMode;
 
-  bool get notificationsEnabled {
-    return settings.notificationsEnabled;
-  }
+  bool get notificationsEnabled => settings.notificationsEnabled;
 
-  bool get biometricsEnabled {
-    return settings.biometricsEnabled;
-  }
+  bool get biometricsEnabled => settings.biometricsEnabled;
 
-  bool get analyticsEnabled {
-    return settings.analyticsEnabled;
-  }
+  bool get analyticsEnabled => settings.analyticsEnabled;
 
-  String get defaultCurrency {
-    return settings.defaultCurrency;
-  }
+  String get defaultCurrency => settings.defaultCurrency;
 
-  bool get hasError {
-    return error != null && error!.isNotEmpty;
+  bool get hasError => error != null && error!.isNotEmpty;
+
+  /// ======================================================
+  /// DEBUG
+  /// ======================================================
+
+  @override
+  String toString() {
+    return '''
+SettingsState(
+  darkMode: ${settings.isDarkMode},
+  notifications: ${settings.notificationsEnabled},
+  biometrics: ${settings.biometricsEnabled},
+  analytics: ${settings.analyticsEnabled},
+  currency: ${settings.defaultCurrency},
+  isLoading: $isLoading,
+  error: $error
+)
+''';
   }
 
   /// ======================================================

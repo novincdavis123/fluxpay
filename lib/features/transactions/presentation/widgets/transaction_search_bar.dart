@@ -41,8 +41,6 @@ class _TransactionSearchBarState extends State<TransactionSearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = AppColors.isDark(context);
-
     return TextField(
       controller: controller,
 
