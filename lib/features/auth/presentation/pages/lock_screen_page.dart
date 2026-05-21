@@ -77,7 +77,10 @@ class _LockScreenPageState extends State<LockScreenPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               backgroundColor: Colors.green.shade500,
-              content: const Text('Unlocked successfully'),
+              content: const Text(
+                'Unlocked successfully',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           );
         }

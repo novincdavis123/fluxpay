@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:fluxpay/app/theme/app_colors.dart';
+import 'package:fluxpay/app/theme/app_spacing.dart';
 import 'package:fluxpay/app/theme/app_text_styles.dart';
+import 'package:fluxpay/core/utils/haptics.dart';
 
 import 'package:fluxpay/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fluxpay/features/auth/presentation/bloc/auth_event.dart';
 import 'package:fluxpay/features/auth/presentation/bloc/auth_state.dart';
 
 import 'package:fluxpay/features/auth/presentation/pages/login_page.dart';
+import 'package:fluxpay/features/settings/presentation/pages/settings_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -16,20 +19,27 @@ class ProfilePage extends StatelessWidget {
   void _logout(BuildContext context) {
     showDialog(
       context: context,
-      barrierDismissible: true,
       builder: (dialogContext) {
         return Dialog(
           backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24),
 
           child: Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(28),
 
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(28),
-
-              color: AppColors.getBackground(context).withOpacity(0.95),
-
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
+              borderRadius: BorderRadius.circular(32),
+              color: AppColors.getCardColor(context),
+              border: Border.all(color: AppColors.getBorderColor(context)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(
+                    AppColors.isDark(context) ? 0.25 : 0.08,
+                  ),
+                  blurRadius: 28,
+                  offset: const Offset(0, 12),
+                ),
+              ],
             ),
 
             child: Column(
@@ -37,8 +47,8 @@ class ProfilePage extends StatelessWidget {
 
               children: [
                 Container(
-                  width: 72,
-                  height: 72,
+                  width: 82,
+                  height: 82,
 
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -48,29 +58,37 @@ class ProfilePage extends StatelessWidget {
                   child: const Icon(
                     Icons.logout_rounded,
                     color: Colors.redAccent,
-                    size: 34,
+                    size: 38,
                   ),
                 ),
 
                 const SizedBox(height: 24),
 
-                Text('Logout?', style: AppTextStyles.headingMedium),
+                Text(
+                  'Logout?',
+                  style: AppTextStyles.headingMedium.copyWith(
+                    color: AppColors.getTextPrimary(context),
+                  ),
+                ),
 
                 const SizedBox(height: 12),
 
                 Text(
                   'Are you sure you want to logout from your FluxPay account?',
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.bodyMedium,
+
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.getTextSecondary(context),
+                  ),
                 ),
 
-                const SizedBox(height: 28),
+                const SizedBox(height: 30),
 
                 Row(
                   children: [
                     Expanded(
                       child: SizedBox(
-                        height: 52,
+                        height: 54,
 
                         child: OutlinedButton(
                           onPressed: () {
@@ -79,7 +97,7 @@ class ProfilePage extends StatelessWidget {
 
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(
-                              color: Colors.white.withOpacity(0.08),
+                              color: AppColors.getBorderColor(context),
                             ),
 
                             shape: RoundedRectangleBorder(
@@ -92,6 +110,7 @@ class ProfilePage extends StatelessWidget {
 
                             style: AppTextStyles.bodyMedium.copyWith(
                               fontWeight: FontWeight.w600,
+                              color: AppColors.getTextPrimary(context),
                             ),
                           ),
                         ),
@@ -102,14 +121,12 @@ class ProfilePage extends StatelessWidget {
 
                     Expanded(
                       child: SizedBox(
-                        height: 52,
+                        height: 54,
 
                         child: ElevatedButton(
                           onPressed: () {
-                            /// CLOSE DIALOG
                             Navigator.pop(dialogContext);
 
-                            /// DISPATCH LOGOUT
                             context.read<AuthBloc>().add(
                               const LogoutRequested(),
                             );
@@ -147,6 +164,7 @@ class ProfilePage extends StatelessWidget {
 
                                 style: AppTextStyles.bodyMedium.copyWith(
                                   fontWeight: FontWeight.w700,
+                                  color: Colors.white,
                                 ),
                               );
                             },
@@ -170,10 +188,6 @@ class ProfilePage extends StatelessWidget {
       listenWhen: (previous, current) => previous.status != current.status,
 
       listener: (context, state) {
-        /// =====================================================
-        /// LOGOUT SUCCESS
-        /// =====================================================
-
         if (state.status == AuthStatus.unauthenticated) {
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -181,15 +195,10 @@ class ProfilePage extends StatelessWidget {
           );
         }
 
-        /// =====================================================
-        /// ERROR
-        /// =====================================================
-
         if (state.status == AuthStatus.failure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               backgroundColor: Colors.red.shade400,
-
               content: Text(state.errorMessage ?? 'Something went wrong'),
             ),
           );
@@ -199,120 +208,252 @@ class ProfilePage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.getBackground(context),
 
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          centerTitle: true,
-
-          title: Text('Profile', style: AppTextStyles.headingMedium),
-        ),
-
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppSpacing.lg),
 
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+
               children: [
-                /// PROFILE HEADER
+                /// =====================================================
+                /// HEADER
+                /// =====================================================
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                  children: [
+                    Text(
+                      'Profile',
+
+                      style: AppTextStyles.displaySmall.copyWith(
+                        color: AppColors.getTextPrimary(context),
+                      ),
+                    ),
+
+                    InkWell(
+                      onTap: () async {
+                        await AppHaptics.selection();
+
+                        if (!context.mounted) {
+                          return;
+                        }
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const SettingsPage(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.getCardColor(context),
+                          border: Border.all(
+                            color: AppColors.getBorderColor(context),
+                          ),
+                        ),
+
+                        child: Icon(
+                          Icons.settings_outlined,
+                          color: AppColors.getTextPrimary(context),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 28),
+
+                /// =====================================================
+                /// PREMIUM CARD
+                /// =====================================================
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(26),
 
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(28),
+                    borderRadius: BorderRadius.circular(34),
 
-                    color: Colors.white.withOpacity(0.05),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
 
-                    border: Border.all(color: Colors.white.withOpacity(0.06)),
+                      colors: AppColors.isDark(context)
+                          ? [const Color(0xFF1E1F28), const Color(0xFF2A2B36)]
+                          : [const Color(0xFFF7F9FC), const Color(0xFFEDEFF5)],
+                    ),
+
+                    border: Border.all(
+                      color: AppColors.getBorderColor(context),
+                    ),
+
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(
+                          AppColors.isDark(context) ? 0.22 : 0.06,
+                        ),
+                        blurRadius: 24,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
                   ),
 
                   child: Column(
                     children: [
-                      Container(
-                        width: 90,
-                        height: 90,
+                      Row(
+                        children: [
+                          Container(
+                            width: 88,
+                            height: 88,
 
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
 
-                          gradient: LinearGradient(
-                            colors: [
-                              AppColors.primary,
-                              AppColors.primary.withOpacity(0.6),
-                            ],
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.primary.withOpacity(0.7),
+                                ],
+                              ),
+                            ),
+
+                            child: const Icon(
+                              Icons.person_rounded,
+                              color: Colors.white,
+                              size: 42,
+                            ),
                           ),
-                        ),
 
-                        child: const Icon(
-                          Icons.person_rounded,
-                          color: Colors.white,
-                          size: 42,
-                        ),
+                          const SizedBox(width: 18),
+
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+
+                              children: [
+                                Text(
+                                  'Novin Davis',
+
+                                  style: AppTextStyles.headingMedium.copyWith(
+                                    color: AppColors.getTextPrimary(context),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 8),
+
+                                Text(
+                                  'novin@fluxpay.app',
+
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: AppColors.getTextSecondary(context),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 14),
+
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 8,
+                                  ),
+
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(100),
+                                    color: AppColors.primary.withOpacity(0.12),
+                                  ),
+
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+
+                                    children: [
+                                      const Icon(
+                                        Icons.workspace_premium_rounded,
+                                        size: 18,
+                                        color: AppColors.primary,
+                                      ),
+
+                                      const SizedBox(width: 6),
+
+                                      Text(
+                                        'Premium User',
+
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 26),
 
-                      Text('Novin Davis', style: AppTextStyles.displaySmall),
-
-                      const SizedBox(height: 8),
-
-                      Text(
-                        'novin@fluxpay.app',
-
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: Colors.white60,
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(100),
-
-                          color: AppColors.primary.withOpacity(0.14),
-                        ),
-
-                        child: Text(
-                          'Premium User',
-
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w700,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _ProfileStatCard(
+                              icon: Icons.sync_alt_rounded,
+                              title: 'Transfers',
+                              value: '128',
+                            ),
                           ),
-                        ),
+
+                          const SizedBox(width: 14),
+
+                          Expanded(
+                            child: _ProfileStatCard(
+                              icon: Icons.public_rounded,
+                              title: 'Countries',
+                              value: '18',
+                            ),
+                          ),
+
+                          const SizedBox(width: 14),
+
+                          Expanded(
+                            child: _ProfileStatCard(
+                              icon: Icons.account_balance_wallet_rounded,
+                              title: 'Volume',
+                              value: '\$42K',
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 34),
 
                 const _SectionTitle(title: 'Account'),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
 
                 _ProfileTile(
-                  icon: Icons.person_outline_rounded,
+                  icon: Icons.badge_outlined,
                   title: 'Personal Information',
                   subtitle: 'Manage your profile details',
                   onTap: () {},
                 ),
 
                 _ProfileTile(
-                  icon: Icons.security_rounded,
+                  icon: Icons.lock_outline_rounded,
                   title: 'Security Settings',
                   subtitle: 'PIN, biometrics and app lock',
                   onTap: () {},
                 ),
 
                 _ProfileTile(
-                  icon: Icons.notifications_none_rounded,
+                  icon: Icons.notifications_active_outlined,
                   title: 'Notifications',
                   subtitle: 'Manage alerts and updates',
                   onTap: () {},
@@ -322,39 +463,38 @@ class ProfilePage extends StatelessWidget {
 
                 const _SectionTitle(title: 'Support'),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
 
                 _ProfileTile(
-                  icon: Icons.help_outline_rounded,
+                  icon: Icons.support_agent_rounded,
                   title: 'Help Center',
                   subtitle: 'FAQs and customer support',
                   onTap: () {},
                 ),
 
                 _ProfileTile(
-                  icon: Icons.description_outlined,
+                  icon: Icons.verified_user_outlined,
                   title: 'Terms & Privacy',
                   subtitle: 'Read our policies',
                   onTap: () {},
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 42),
 
                 SizedBox(
                   width: double.infinity,
-                  height: 58,
+                  height: 60,
 
                   child: ElevatedButton.icon(
                     onPressed: () => _logout(context),
 
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red.withOpacity(0.12),
-
                       foregroundColor: Colors.redAccent,
                       elevation: 0,
 
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(22),
                       ),
                     ),
 
@@ -390,13 +530,11 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
+    return Text(
+      title,
 
-      child: Text(
-        title,
-
-        style: AppTextStyles.headingSmall.copyWith(color: Colors.white70),
+      style: AppTextStyles.headingSmall.copyWith(
+        color: AppColors.getTextSecondary(context),
       ),
     );
   }
@@ -431,29 +569,27 @@ class _ProfileTile extends StatelessWidget {
         color: Colors.transparent,
 
         child: InkWell(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(24),
           onTap: onTap,
 
           child: Ink(
             padding: const EdgeInsets.all(18),
 
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(24),
+              color: AppColors.getCardColor(context),
 
-              color: Colors.white.withOpacity(0.04),
-
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
+              border: Border.all(color: AppColors.getBorderColor(context)),
             ),
 
             child: Row(
               children: [
                 Container(
-                  width: 52,
-                  height: 52,
+                  width: 56,
+                  height: 56,
 
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-
+                    borderRadius: BorderRadius.circular(18),
                     color: AppColors.primary.withOpacity(0.12),
                   ),
 
@@ -472,31 +608,88 @@ class _ProfileTile extends StatelessWidget {
 
                         style: AppTextStyles.bodyLarge.copyWith(
                           fontWeight: FontWeight.w700,
+                          color: AppColors.getTextPrimary(context),
                         ),
                       ),
 
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 5),
 
                       Text(
                         subtitle,
 
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: Colors.white60,
+                          color: AppColors.getTextSecondary(context),
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: Colors.white38,
+                  color: AppColors.getTextSecondary(context),
                   size: 16,
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// =====================================================
+/// PROFILE STATS
+/// =====================================================
+
+class _ProfileStatCard extends StatelessWidget {
+  final IconData icon;
+
+  final String title;
+
+  final String value;
+
+  const _ProfileStatCard({
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        color: AppColors.primary.withOpacity(0.08),
+      ),
+
+      child: Column(
+        children: [
+          Icon(icon, color: AppColors.primary, size: 24),
+
+          const SizedBox(height: 10),
+
+          Text(
+            value,
+
+            style: AppTextStyles.headingSmall.copyWith(
+              color: AppColors.getTextPrimary(context),
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          Text(
+            title,
+
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.getTextSecondary(context),
+            ),
+          ),
+        ],
       ),
     );
   }

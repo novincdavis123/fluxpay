@@ -267,13 +267,6 @@ Interceptor/token refresh scaffolding was initially explored but removed to avoi
 
 ```bash
 git clone <YOUR_GITHUB_REPOSITORY_URL>
-```
-
-Example:
-
-```bash
-git clone https://github.com/yourusername/fluxpay.git
-```
 
 ---
 

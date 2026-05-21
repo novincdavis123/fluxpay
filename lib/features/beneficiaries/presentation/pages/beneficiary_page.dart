@@ -147,6 +147,18 @@ class _BeneficiaryPageState extends State<BeneficiaryPage> {
       },
 
       child: Scaffold(
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(right: 25, bottom: 25),
+          child: FloatingActionButton.extended(
+            onPressed: _showAddBeneficiarySheet,
+            icon: const Icon(Icons.add),
+            label: const Text('Add Beneficiary'),
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            elevation: 0,
+          ),
+        ),
+
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
@@ -205,30 +217,6 @@ class _BeneficiaryPageState extends State<BeneficiaryPage> {
 
                           subtitle:
                               'Add a beneficiary to start sending money globally.',
-
-                          action: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 16,
-                              ),
-
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                            ),
-
-                            onPressed: _showAddBeneficiarySheet,
-
-                            child: Text(
-                              'Add Beneficiary',
-                              style: AppTextStyles.buttonText,
-                            ),
-                          ),
                         );
                       }
 

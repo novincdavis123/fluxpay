@@ -14,9 +14,8 @@ import 'package:fluxpay/features/beneficiaries/presentation/bloc/beneficiary_eve
 import 'package:fluxpay/features/beneficiaries/presentation/pages/beneficiary_page.dart';
 
 import 'package:fluxpay/features/exchange/presentation/pages/exchange_page.dart';
-import 'package:fluxpay/features/settings/presentation/pages/profile.dart';
 
-import 'package:fluxpay/features/settings/presentation/pages/settings_page.dart';
+import 'package:fluxpay/features/settings/presentation/pages/profile.dart';
 
 import 'package:fluxpay/features/transactions/presentation/pages/transaction_page.dart';
 
@@ -37,9 +36,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = AppColors.isDark(context);
 
     final cardColor = AppColors.getCardColor(context);
 
@@ -47,60 +44,79 @@ class _HomePageState extends State<HomePage> {
 
     final secondaryText = AppColors.getTextSecondary(context);
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: AppColors.getBackground(context),
+    return Scaffold(
+      backgroundColor: AppColors.getBackground(context),
 
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+      body: Stack(
+        children: [
+          /// BACKGROUND GLOW
+          Positioned(
+            top: -120,
+            right: -80,
 
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            child: Container(
+              width: 260,
+              height: 260,
 
-            children: [
-              /// =====================================================
-              /// HEADER
-              /// =====================================================
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+
+                color: AppColors.primary.withOpacity(isDark ? 0.14 : 0.08),
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-
-                    children: [
-                      ShaderMask(
-                        shaderCallback: (bounds) {
-                          return AppColors.primaryGradient.createShader(bounds);
-                        },
-
-                        child: Text(
-                          'FluxPay',
-
-                          style: AppTextStyles.displayMedium.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: AppSpacing.xs),
-
-                      Text(
-                        'Global Remittance Platform',
-
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: secondaryText,
-                        ),
-                      ),
-                    ],
-                  ),
-
+                  /// =====================================================
+                  /// HEADER
+                  /// =====================================================
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
                     children: [
-                      /// SETTINGS BUTTON
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                        children: [
+                          ShaderMask(
+                            shaderCallback: (bounds) {
+                              return AppColors.primaryGradient.createShader(
+                                bounds,
+                              );
+                            },
+
+                            child: Text(
+                              'FluxPay',
+
+                              style: AppTextStyles.displayMedium.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -1,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 6),
+
+                          Text(
+                            'Global Remittance Platform',
+
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: secondaryText,
+                            ),
+                          ),
+                        ],
+                      ),
+
                       _TopActionButton(
-                        icon: Icons.settings_rounded,
+                        icon: Icons.account_circle_rounded,
 
                         onTap: () async {
                           await AppHaptics.selection();
@@ -112,24 +128,6 @@ class _HomePageState extends State<HomePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const SettingsPage(),
-                            ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(width: AppSpacing.sm),
-
-                      /// PROFILE
-                      _TopActionButton(
-                        icon: Icons.person_outline_rounded,
-
-                        onTap: () async {
-                          await AppHaptics.selection();
-
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
                               builder: (_) => const ProfilePage(),
                             ),
                           );
@@ -137,106 +135,176 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
-                ],
-              ),
 
-              const SizedBox(height: AppSpacing.xxl),
+                  const SizedBox(height: 30),
 
-              /// =====================================================
-              /// BALANCE CARD
-              /// =====================================================
-              Container(
-                width: double.infinity,
+                  /// =====================================================
+                  /// HERO BALANCE CARD
+                  /// =====================================================
+                  Container(
+                    width: double.infinity,
 
-                padding: const EdgeInsets.all(AppSpacing.xl),
+                    padding: const EdgeInsets.all(28),
 
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(36),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(36),
 
-                  gradient: AppColors.primaryGradient,
+                      gradient: AppColors.primaryGradient,
 
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withOpacity(0.35),
-                      blurRadius: 30,
-                      offset: const Offset(0, 18),
-                    ),
-                  ],
-                ),
-
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-
-                  children: [
-                    Text(
-                      'Total Balance',
-
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white70,
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSpacing.sm),
-
-                    Text(
-                      '\$24,860.45',
-
-                      style: AppTextStyles.displayLarge.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSpacing.lg),
-
-                    Row(
-                      children: const [
-                        _CurrencyChip(label: 'USD Wallet'),
-
-                        SizedBox(width: AppSpacing.sm),
-
-                        _CurrencyChip(label: 'INR Wallet'),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.32),
+                          blurRadius: 34,
+                          offset: const Offset(0, 18),
+                        ),
                       ],
                     ),
-                  ],
-                ),
-              ),
 
-              const SizedBox(height: AppSpacing.xxl),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
 
-              /// =====================================================
-              /// QUICK ACTIONS
-              /// =====================================================
-              Text(
-                'Quick Actions',
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
-                style: AppTextStyles.headingMedium.copyWith(color: primaryText),
-              ),
+                          children: [
+                            Text(
+                              'Total Balance',
 
-              const SizedBox(height: AppSpacing.lg),
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: Colors.white70,
+                              ),
+                            ),
 
-              GridView.count(
-                crossAxisCount: 2,
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
 
-                shrinkWrap: true,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(100),
 
-                physics: const NeverScrollableScrollPhysics(),
+                                color: Colors.white.withOpacity(0.14),
+                              ),
 
-                crossAxisSpacing: AppSpacing.md,
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
 
-                mainAxisSpacing: AppSpacing.md,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.greenAccent,
+                                    ),
+                                  ),
 
-                childAspectRatio: 1.05,
+                                  const SizedBox(width: 6),
 
-                children: [
-                  _ActionCard(
+                                  Text(
+                                    'Live FX',
+
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        Text(
+                          '\$24,860.45',
+
+                          style: AppTextStyles.displayLarge.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        Row(
+                          children: const [
+                            _CurrencyChip(label: 'USD Wallet'),
+
+                            SizedBox(width: 12),
+
+                            _CurrencyChip(label: 'INR Wallet'),
+                          ],
+                        ),
+
+                        const SizedBox(height: 28),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                          children: const [
+                            _QuickStat(label: 'This Month', value: '\$8.2K'),
+
+                            _QuickStat(label: 'Transfers', value: '48'),
+
+                            _QuickStat(label: 'Countries', value: '12'),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 22),
+
+                  /// =====================================================
+                  /// MINI INSIGHTS
+                  /// =====================================================
+                  Row(
+                    children: const [
+                      Expanded(
+                        child: _MiniInsightCard(
+                          title: 'Monthly Growth',
+                          value: '+12.4%',
+                          icon: Icons.trending_up_rounded,
+                        ),
+                      ),
+
+                      SizedBox(width: 14),
+
+                      Expanded(
+                        child: _MiniInsightCard(
+                          title: 'Transfers',
+                          value: '24',
+                          icon: Icons.swap_horiz_rounded,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 34),
+
+                  /// =====================================================
+                  /// QUICK ACTIONS TITLE
+                  /// =====================================================
+                  Text(
+                    'Quick Actions',
+
+                    style: AppTextStyles.headingMedium.copyWith(
+                      color: primaryText,
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  /// =====================================================
+                  /// LARGE SEND MONEY CARD
+                  /// =====================================================
+                  _LargeActionCard(
                     title: 'Send Money',
-
-                    subtitle: 'Start transfer',
-
-                    icon: Icons.send_rounded,
-
-                    backgroundColor: cardColor,
+                    subtitle: 'Transfer funds globally in seconds',
+                    icon: Icons.north_east_rounded,
 
                     onTap: () async {
                       await AppHaptics.selection();
@@ -252,125 +320,141 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
 
-                  _ActionCard(
-                    title: 'Beneficiaries',
+                  const SizedBox(height: 16),
 
-                    subtitle: 'Manage recipients',
+                  /// =====================================================
+                  /// MEDIUM ACTIONS
+                  /// =====================================================
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MediumActionCard(
+                          title: 'Beneficiaries',
+                          subtitle: 'Recipients',
+                          icon: Icons.group_add_rounded,
 
-                    icon: Icons.people_alt_rounded,
+                          onTap: () async {
+                            await AppHaptics.selection();
 
-                    backgroundColor: cardColor,
+                            if (!context.mounted) {
+                              return;
+                            }
 
-                    onTap: () async {
-                      await AppHaptics.selection();
-
-                      if (!context.mounted) {
-                        return;
-                      }
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const BeneficiaryPage(),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const BeneficiaryPage(),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
+                      ),
+
+                      const SizedBox(width: 14),
+
+                      Expanded(
+                        child: _MediumActionCard(
+                          title: 'Transactions',
+                          subtitle: 'History',
+                          icon: Icons.wallet_rounded,
+
+                          onTap: () async {
+                            await AppHaptics.selection();
+
+                            if (!context.mounted) {
+                              return;
+                            }
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const TransactionPage(),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
 
-                  _ActionCard(
-                    title: 'Transactions',
+                  const SizedBox(height: 14),
 
-                    subtitle: 'Transfer history',
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MediumActionCard(
+                          title: 'Analytics',
+                          subtitle: 'Insights',
+                          icon: Icons.query_stats_rounded,
 
-                    icon: Icons.receipt_long_rounded,
+                          onTap: () async {
+                            await AppHaptics.selection();
 
-                    backgroundColor: cardColor,
+                            if (!context.mounted) {
+                              return;
+                            }
 
-                    onTap: () async {
-                      await AppHaptics.selection();
-
-                      if (!context.mounted) {
-                        return;
-                      }
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const TransactionPage(),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const AnalyticsPage(),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
+                      ),
 
-                  _ActionCard(
-                    title: 'Analytics',
+                      const SizedBox(width: 14),
 
-                    subtitle: 'Spending insights',
+                      Expanded(
+                        child: Container(
+                          height: 168,
 
-                    icon: Icons.bar_chart_rounded,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(28),
 
-                    backgroundColor: cardColor,
+                            color: cardColor,
 
-                    onTap: () async {
-                      await AppHaptics.selection();
+                            border: Border.all(
+                              color: AppColors.getBorderColor(context),
+                            ),
+                          ),
 
-                      if (!context.mounted) {
-                        return;
-                      }
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const AnalyticsPage(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: AppSpacing.xxl),
-
-              /// =====================================================
-              /// LIVE FX MARKET
-              /// =====================================================
-              Container(
-                width: double.infinity,
-
-                padding: const EdgeInsets.all(AppSpacing.xl),
-
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-
-                  color: cardColor,
-
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? 0.20 : 0.04),
-                      blurRadius: 16,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 10,
-                          height: 10,
-
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.green,
+                          child: Center(
+                            child: Text(
+                              'Premium FX',
+                              style: AppTextStyles.headingSmall,
+                            ),
                           ),
                         ),
+                      ),
+                    ],
+                  ),
 
-                        const SizedBox(width: AppSpacing.sm),
+                  const SizedBox(height: 34),
 
+                  /// =====================================================
+                  /// LIVE FX MARKET
+                  /// =====================================================
+                  Container(
+                    width: double.infinity,
+
+                    padding: const EdgeInsets.all(24),
+
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+
+                      color: cardColor,
+
+                      border: Border.all(
+                        color: AppColors.getBorderColor(context),
+                      ),
+                    ),
+
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+
+                      children: [
                         Text(
                           'Live FX Market',
 
@@ -378,53 +462,86 @@ class _HomePageState extends State<HomePage> {
                             color: primaryText,
                           ),
                         ),
+
+                        const SizedBox(height: 24),
+
+                        const _MarketRateTile(
+                          pair: 'USD → INR',
+                          rate: '83.42',
+                          change: '+0.24%',
+                        ),
+
+                        SizedBox(height: 18),
+
+                        const _MarketRateTile(
+                          pair: 'EUR → USD',
+                          rate: '1.08',
+                          change: '+0.11%',
+                        ),
+
+                        SizedBox(height: 18),
+
+                        const _MarketRateTile(
+                          pair: 'AED → INR',
+                          rate: '22.71',
+                          change: '-0.09%',
+                        ),
                       ],
                     ),
+                  ),
 
-                    const SizedBox(height: AppSpacing.xl),
+                  const SizedBox(height: 34),
 
-                    const _MarketRateTile(
-                      pair: 'USD → INR',
-                      rate: '83.42',
-                      change: '+0.24%',
+                  /// =====================================================
+                  /// RECENT ACTIVITY
+                  /// =====================================================
+                  Text(
+                    'Recent Activity',
+
+                    style: AppTextStyles.headingMedium.copyWith(
+                      color: primaryText,
                     ),
+                  ),
 
-                    const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: 18),
 
-                    const _MarketRateTile(
-                      pair: 'EUR → USD',
-                      rate: '1.08',
-                      change: '+0.11%',
+                  const _RecentActivityTile(
+                    title: 'Transfer to Alex',
+                    subtitle: 'Completed • 2 mins ago',
+                  ),
+
+                  SizedBox(height: 12),
+
+                  const _RecentActivityTile(
+                    title: 'USD → AED Exchange',
+                    subtitle: 'Processing • 10 mins ago',
+                  ),
+
+                  SizedBox(height: 12),
+
+                  const _RecentActivityTile(
+                    title: 'INR Wallet Topup',
+                    subtitle: 'Completed • Today',
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  Center(
+                    child: Text(
+                      'Powered by FluxPay FX Engine',
+
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: secondaryText,
+                      ),
                     ),
+                  ),
 
-                    const SizedBox(height: AppSpacing.lg),
-
-                    const _MarketRateTile(
-                      pair: 'AED → INR',
-                      rate: '22.71',
-                      change: '-0.09%',
-                    ),
-                  ],
-                ),
+                  const SizedBox(height: 20),
+                ],
               ),
-
-              const SizedBox(height: AppSpacing.xxl),
-
-              /// =====================================================
-              /// FOOTER
-              /// =====================================================
-              Center(
-                child: Text(
-                  'Powered by FluxPay FX Engine',
-
-                  style: AppTextStyles.bodySmall.copyWith(color: secondaryText),
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.xl),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -432,128 +549,260 @@ class _HomePageState extends State<HomePage> {
 
 class _TopActionButton extends StatelessWidget {
   final IconData icon;
-
   final VoidCallback onTap;
 
   const _TopActionButton({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return GestureDetector(
       onTap: onTap,
 
       child: Container(
-        width: 52,
-        height: 52,
+        width: 54,
+        height: 54,
 
         decoration: BoxDecoration(
           shape: BoxShape.circle,
 
-          color: isDark
-              ? Colors.white.withOpacity(0.06)
-              : Colors.black.withOpacity(0.04),
+          color: AppColors.getCardColor(context),
 
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withOpacity(0.05)
-                : Colors.black.withOpacity(0.05),
-          ),
+          border: Border.all(color: AppColors.getBorderColor(context)),
         ),
 
-        child: Icon(icon, color: Theme.of(context).iconTheme.color),
+        child: Icon(icon),
       ),
     );
   }
 }
 
-class _ActionCard extends StatelessWidget {
+class _LargeActionCard extends StatelessWidget {
   final String title;
-
   final String subtitle;
-
   final IconData icon;
-
   final VoidCallback onTap;
 
-  final Color backgroundColor;
-
-  const _ActionCard({
+  const _LargeActionCard({
     required this.title,
     required this.subtitle,
     required this.icon,
     required this.onTap,
-    required this.backgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return GestureDetector(
       onTap: onTap,
 
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
+      child: Container(
+        width: double.infinity,
 
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(24),
 
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(32),
 
-          color: backgroundColor,
-
-          border: Border.all(color: AppColors.getBorderColor(context)),
-
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.20 : 0.04),
-              blurRadius: 14,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          gradient: AppColors.primaryGradient,
         ),
 
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-
+        child: Row(
           children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+
+                children: [
+                  Text(
+                    title,
+
+                    style: AppTextStyles.headingMedium.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    subtitle,
+
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             Container(
-              width: 56,
-              height: 56,
+              padding: const EdgeInsets.all(16),
 
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-
-                gradient: AppColors.primaryGradient,
+                color: Colors.white.withOpacity(0.14),
               ),
 
               child: Icon(icon, color: Colors.white, size: 28),
             ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            Text(
-              title,
-
-              style: AppTextStyles.headingSmall,
-
-              textAlign: TextAlign.center,
-            ),
-
-            const SizedBox(height: 6),
-
-            Text(
-              subtitle,
-
-              style: AppTextStyles.bodySmall,
-
-              textAlign: TextAlign.center,
-            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _MediumActionCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _MediumActionCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+
+      child: Container(
+        height: 168,
+
+        padding: const EdgeInsets.all(20),
+
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+
+          color: AppColors.getCardColor(context),
+
+          border: Border.all(color: AppColors.getBorderColor(context)),
+        ),
+
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+
+                gradient: AppColors.primaryGradient,
+              ),
+
+              child: Icon(icon, color: Colors.white),
+            ),
+
+            const Spacer(),
+
+            Text(title, style: AppTextStyles.headingSmall),
+
+            const SizedBox(height: 4),
+
+            Text(subtitle, style: AppTextStyles.bodySmall),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MiniInsightCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+
+  const _MiniInsightCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+
+        color: AppColors.getCardColor(context),
+
+        border: Border.all(color: AppColors.getBorderColor(context)),
+      ),
+
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+
+              color: AppColors.primary.withOpacity(0.12),
+            ),
+
+            child: Icon(icon, color: AppColors.primary),
+          ),
+
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+
+              children: [
+                Text(title, style: AppTextStyles.bodySmall),
+
+                const SizedBox(height: 4),
+
+                Text(
+                  value,
+
+                  style: AppTextStyles.headingSmall.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickStat extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _QuickStat({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          value,
+
+          style: AppTextStyles.headingSmall.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+
+        const SizedBox(height: 4),
+
+        Text(
+          label,
+
+          style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
+        ),
+      ],
     );
   }
 }
@@ -572,14 +821,15 @@ class _CurrencyChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(100),
 
         color: Colors.white.withOpacity(0.14),
-
-        border: Border.all(color: Colors.white.withOpacity(0.12)),
       ),
 
       child: Text(
         label,
 
-        style: AppTextStyles.label.copyWith(color: Colors.white),
+        style: AppTextStyles.bodySmall.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -587,9 +837,7 @@ class _CurrencyChip extends StatelessWidget {
 
 class _MarketRateTile extends StatelessWidget {
   final String pair;
-
   final String rate;
-
   final String change;
 
   const _MarketRateTile({
@@ -612,7 +860,7 @@ class _MarketRateTile extends StatelessWidget {
           children: [
             Text(pair, style: AppTextStyles.headingSmall),
 
-            const SizedBox(height: AppSpacing.xs),
+            const SizedBox(height: 4),
 
             Text('Live interbank rate', style: AppTextStyles.bodySmall),
           ],
@@ -630,7 +878,7 @@ class _MarketRateTile extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: AppSpacing.xs),
+            const SizedBox(height: 4),
 
             Text(
               change,
@@ -644,6 +892,60 @@ class _MarketRateTile extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+class _RecentActivityTile extends StatelessWidget {
+  final String title;
+  final String subtitle;
+
+  const _RecentActivityTile({required this.title, required this.subtitle});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+
+        color: AppColors.getCardColor(context),
+
+        border: Border.all(color: AppColors.getBorderColor(context)),
+      ),
+
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+
+              color: AppColors.primary.withOpacity(0.12),
+            ),
+
+            child: const Icon(Icons.sync_alt_rounded, color: AppColors.primary),
+          ),
+
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+
+              children: [
+                Text(title, style: AppTextStyles.bodyLarge),
+
+                const SizedBox(height: 4),
+
+                Text(subtitle, style: AppTextStyles.bodySmall),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
