@@ -134,8 +134,8 @@ class TransactionTile extends StatelessWidget {
                 /// STATUS ICON
                 /// ======================================================
                 Container(
-                  width: 62,
-                  height: 62,
+                  width: 58,
+                  height: 58,
 
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
