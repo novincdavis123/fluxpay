@@ -31,7 +31,7 @@ class SettingsModel extends HiveObject {
 
   factory SettingsModel.initial() {
     return SettingsModel(
-      isDarkMode: true,
+      isDarkMode: false,
       notificationsEnabled: true,
       biometricsEnabled: false,
       defaultCurrency: 'USD',

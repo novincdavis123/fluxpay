@@ -25,7 +25,7 @@ class SettingsState extends Equatable {
 
   factory SettingsState.initial() {
     const initialSettings = SettingsEntity(
-      isDarkMode: true,
+      isDarkMode: false,
       notificationsEnabled: true,
       biometricsEnabled: false,
       defaultCurrency: 'USD',

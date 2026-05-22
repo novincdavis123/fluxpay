@@ -223,14 +223,42 @@ class ProfilePage extends StatelessWidget {
                 /// HEADER
                 /// =====================================================
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
                   children: [
-                    Text(
-                      'Profile',
+                    InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
 
-                      style: AppTextStyles.displaySmall.copyWith(
-                        color: AppColors.getTextPrimary(context),
+                      borderRadius: BorderRadius.circular(16),
+
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.getCardColor(context),
+                          border: Border.all(
+                            color: AppColors.getBorderColor(context),
+                          ),
+                        ),
+
+                        child: Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          size: 18,
+                          color: AppColors.getTextPrimary(context),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 16),
+
+                    Expanded(
+                      child: Text(
+                        'Profile',
+
+                        style: AppTextStyles.displaySmall.copyWith(
+                          color: AppColors.getTextPrimary(context),
+                        ),
                       ),
                     ),
 

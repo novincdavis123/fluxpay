@@ -121,7 +121,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<void> resetSettings() async {
     const defaultSettings = SettingsEntity(
-      isDarkMode: true,
+      isDarkMode: false,
       notificationsEnabled: true,
       biometricsEnabled: false,
       defaultCurrency: 'USD',

@@ -160,7 +160,7 @@ class _ExchangePageState extends State<ExchangePage>
                   elevation: 0,
                   centerTitle: false,
                   backgroundColor: Colors.transparent,
-
+                  surfaceTintColor: Colors.transparent,
                   title: Text(
                     'Exchange',
 
@@ -172,37 +172,21 @@ class _ExchangePageState extends State<ExchangePage>
 
                 body: SafeArea(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                    ),
 
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
 
                       children: [
-                        /// HEADER
-                        // Text(
-                        //   'Global Exchange',
-
-                        //   style: AppTextStyles.headingLarge.copyWith(
-                        //     color: AppColors.getTextPrimary(context),
-                        //   ),
-                        // ),
-
-                        // const SizedBox(height: AppSpacing.sm),
-
-                        // Text(
-                        //   'Fast and transparent international transfers',
-
-                        //   style: AppTextStyles.bodyMedium.copyWith(
-                        //     color: AppColors.getTextSecondary(context),
-                        //   ),
-                        // ),
-                        // const SizedBox(height: AppSpacing.xl),
-
                         /// MAIN CARD
                         Container(
                           width: double.infinity,
 
-                          padding: const EdgeInsets.all(AppSpacing.xl),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.xl,
+                          ),
 
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(32),

@@ -26,6 +26,22 @@ class AuthValidators {
       return 'Minimum 8 characters';
     }
 
+    if (!RegExp(r'[A-Z]').hasMatch(password)) {
+      return 'Add at least 1 uppercase letter';
+    }
+
+    if (!RegExp(r'[a-z]').hasMatch(password)) {
+      return 'Add at least 1 lowercase letter';
+    }
+
+    if (!RegExp(r'[0-9]').hasMatch(password)) {
+      return 'Add at least 1 number';
+    }
+
+    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) {
+      return 'Add at least 1 special character';
+    }
+
     return null;
   }
 }

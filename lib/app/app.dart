@@ -166,27 +166,18 @@ THEME MODE => ${settingsState.themeMode}
 ''');
 
                 return SessionWrapper(
-                  child: BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, authState) {
-                      /// ======================================================
-                      /// APP ROUTER NOW REBUILDS
-                      /// WHEN AUTH STATE CHANGES
-                      /// ======================================================
+                  child: MaterialApp(
+                    title: 'FluxPay',
 
-                      return MaterialApp(
-                        title: 'FluxPay',
+                    debugShowCheckedModeBanner: false,
 
-                        debugShowCheckedModeBanner: false,
+                    theme: AppTheme.lightTheme,
 
-                        theme: AppTheme.lightTheme,
+                    darkTheme: AppTheme.darkTheme,
 
-                        darkTheme: AppTheme.darkTheme,
+                    themeMode: settingsState.themeMode,
 
-                        themeMode: settingsState.themeMode,
-
-                        home: const AppRouter(),
-                      );
-                    },
+                    home: const AppRouter(),
                   ),
                 );
               },

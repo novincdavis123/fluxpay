@@ -59,7 +59,7 @@ class SettingsEntity extends Equatable {
 
   factory SettingsEntity.fromMap(Map<String, dynamic> map) {
     return SettingsEntity(
-      isDarkMode: map['isDarkMode'] ?? true,
+      isDarkMode: map['isDarkMode'] ?? false,
 
       notificationsEnabled: map['notificationsEnabled'] ?? true,
 
