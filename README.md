@@ -141,7 +141,7 @@ Important flows implemented:
 FluxPay integrates with:
 
 * Frankfurter API
-* https://www.frankfurter.app
+* https://frankfurter.app
 
 The API is used for:
 
@@ -261,14 +261,14 @@ Interceptor/token refresh scaffolding was initially explored but removed to avoi
 * connectivity_plus
 
 ---
+
 # How To Run
 
 ## 1. Clone Repository
 
 ```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
-
----
+git clone https://github.com
+```
 
 ## 2. Navigate Into Project
 
@@ -276,23 +276,17 @@ git clone <YOUR_GITHUB_REPOSITORY_URL>
 cd fluxpay
 ```
 
----
-
 ## 3. Install Dependencies
 
 ```bash
 flutter pub get
 ```
 
----
-
 ## 4. Run Code Generation (If Required)
 
 ```bash
 flutter pub run build_runner build --delete-conflicting-outputs
 ```
-
----
 
 ## 5. Run Application
 
@@ -305,8 +299,8 @@ flutter run
 # Recommended Flutter Version
 
 ```text
-Flutter 3.22+
-Dart 3+
+Flutter 3.47.8 (or 3.22+)
+Dart 3.13+
 ```
 
 ---
@@ -358,4 +352,15 @@ FluxPay was developed with a strong emphasis on:
 * scalable feature organization
 
 The project intentionally prioritizes architectural quality and stability over excessive feature expansion.
- this is a test push for getting build
+
+---
+
+# Download Latest Build
+
+Automated Android release builds are generated via GitHub Actions whenever changes are pushed or merged into the **`build`** branch:
+
+[![Build Status](https://github.com)](https://github.com)
+[![Download Latest APK](https://shields.io)](https://github.com)
+
+* **Direct APK Download:** [Download Latest `app-release.apk`](https://github.com)
+* **Build Branch & Workflow Runs:** [View `build` Branch Actions](https://github.com?query=branch%3Abuild)
