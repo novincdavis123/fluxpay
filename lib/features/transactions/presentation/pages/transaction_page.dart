@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluxpay/features/transactions/presentation/widgets/amount_field.dart';
 import 'package:intl/intl.dart';
@@ -548,7 +548,7 @@ class _TransactionPageState extends State<TransactionPage> {
                                       size: 72,
                                       color: AppColors.getTextMuted(
                                         context,
-                                      ).withOpacity(0.3),
+                                      ).withValues(alpha: 0.3),
                                     ),
 
                                     const SizedBox(height: AppSpacing.lg),

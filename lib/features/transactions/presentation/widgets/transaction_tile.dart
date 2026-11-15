@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:intl/intl.dart';
 
@@ -119,7 +119,7 @@ class TransactionTile extends StatelessWidget {
 
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(isDark ? 0.22 : 0.05),
+                  color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.05),
 
                   blurRadius: 26,
 
@@ -142,8 +142,8 @@ class TransactionTile extends StatelessWidget {
 
                     gradient: LinearGradient(
                       colors: [
-                        statusColor.withOpacity(0.22),
-                        statusColor.withOpacity(0.08),
+                        statusColor.withValues(alpha: 0.22),
+                        statusColor.withValues(alpha: 0.08),
                       ],
                     ),
                   ),
@@ -245,10 +245,10 @@ class TransactionTile extends StatelessWidget {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(100),
 
-                        color: statusColor.withOpacity(0.12),
+                        color: statusColor.withValues(alpha: 0.12),
 
                         border: Border.all(
-                          color: statusColor.withOpacity(0.20),
+                          color: statusColor.withValues(alpha: 0.20),
                         ),
                       ),
 

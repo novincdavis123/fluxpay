@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:fluxpay/app/theme/app_colors.dart';
 
@@ -79,14 +79,14 @@ class _ShimmerBoxState extends State<ShimmerBox>
 
             border: Border.all(
               color: isDark
-                  ? Colors.white.withOpacity(0.03)
-                  : Colors.black.withOpacity(0.03),
+                  ? Colors.white.withValues(alpha: 0.03)
+                  : Colors.black.withValues(alpha: 0.03),
             ),
 
             boxShadow: widget.enableShadow
                 ? [
                     BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? 0.20 : 0.04),
+                      color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.04),
 
                       blurRadius: 10,
 

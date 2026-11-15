@@ -1,5 +1,5 @@
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fluxpay/app/theme/app_colors.dart';
 import 'package:fluxpay/app/theme/app_text_styles.dart';
 
@@ -25,8 +25,8 @@ class MonthlyVolumeChart extends StatelessWidget {
 
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.04)
-              : Colors.black.withOpacity(0.04),
+              ? Colors.white.withValues(alpha: 0.04)
+              : Colors.black.withValues(alpha: 0.04),
         ),
       ),
 
@@ -49,8 +49,8 @@ class MonthlyVolumeChart extends StatelessWidget {
                   getDrawingHorizontalLine: (_) {
                     return FlLine(
                       color: isDark
-                          ? Colors.white.withOpacity(0.05)
-                          : Colors.black.withOpacity(0.05),
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.05),
                       strokeWidth: 1,
                     );
                   },
@@ -147,8 +147,8 @@ class MonthlyVolumeChart extends StatelessWidget {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          AppColors.primary.withOpacity(0.25),
-                          AppColors.primary.withOpacity(0.02),
+                          AppColors.primary.withValues(alpha: 0.25),
+                          AppColors.primary.withValues(alpha: 0.02),
                         ],
                       ),
                     ),

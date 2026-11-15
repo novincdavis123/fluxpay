@@ -1,5 +1,5 @@
 import 'package:decimal/decimal.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:fluxpay/app/theme/app_colors.dart';
@@ -199,8 +199,8 @@ class _ExchangePageState extends State<ExchangePage>
 
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(
-                                  AppColors.isDark(context) ? 0.20 : 0.05,
+                                color: Colors.black.withValues(
+                                  alpha: AppColors.isDark(context) ? 0.20 : 0.05,
                                 ),
 
                                 blurRadius: 20,
@@ -273,7 +273,7 @@ class _ExchangePageState extends State<ExchangePage>
                                         boxShadow: [
                                           BoxShadow(
                                             color: AppColors.primary
-                                                .withOpacity(0.35),
+                                                .withValues(alpha: 0.35),
 
                                             blurRadius: 18,
 
@@ -333,7 +333,7 @@ class _ExchangePageState extends State<ExchangePage>
                                   borderRadius: BorderRadius.circular(24),
 
                                   color: AppColors.isDark(context)
-                                      ? Colors.white.withOpacity(0.04)
+                                      ? Colors.white.withValues(alpha: 0.04)
                                       : Colors.grey.shade100,
                                 ),
 
@@ -529,7 +529,7 @@ class _CurrencyInputCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
 
-        color: isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade100,
+        color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.grey.shade100,
       ),
 
       child: Column(

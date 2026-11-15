@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fluxpay/app/theme/app_colors.dart';
 import 'package:fluxpay/app/theme/app_spacing.dart';
 import 'package:fluxpay/app/theme/app_text_styles.dart';
@@ -23,7 +23,7 @@ class OverviewCard extends StatelessWidget {
 
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.28),
+            color: AppColors.primary.withValues(alpha: 0.28),
             blurRadius: 28,
             offset: const Offset(0, 16),
           ),
@@ -41,7 +41,7 @@ class OverviewCard extends StatelessWidget {
 
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.14),
+                  color: Colors.white.withValues(alpha: 0.14),
                 ),
 
                 child: const Icon(Icons.public_rounded, color: Colors.white),
@@ -57,7 +57,7 @@ class OverviewCard extends StatelessWidget {
 
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(100),
-                  color: Colors.white.withOpacity(0.14),
+                  color: Colors.white.withValues(alpha: 0.14),
                 ),
 
                 child: Text(

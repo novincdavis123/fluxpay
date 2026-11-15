@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:fluxpay/app/theme/app_spacing.dart';
 
@@ -44,7 +44,7 @@ class ExchangeLoadingView extends StatelessWidget {
                   height: 56,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.06),
+                    color: Colors.white.withValues(alpha: 0.06),
                   ),
                   child: const Center(child: ShimmerBox(height: 24, width: 24)),
                 ),
@@ -62,7 +62,7 @@ class ExchangeLoadingView extends StatelessWidget {
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(24),
-                    color: Colors.white.withOpacity(0.04),
+                    color: Colors.white.withValues(alpha: 0.04),
                   ),
                   child: Column(
                     children: [

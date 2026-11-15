@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:fluxpay/core/constants/currency_data.dart';
 
@@ -78,7 +78,7 @@ class _CurrencySelectorBottomSheetState
                   child: ListView.separated(
                     controller: scrollController,
                     itemCount: filteredCurrencies.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final currency = filteredCurrencies[index];
 

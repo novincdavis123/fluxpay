@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:fluxpay/app/theme/app_colors.dart';
@@ -78,7 +78,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         subtitle: 'Enable premium dark theme',
 
                         trailing: Switch(
-                          activeColor: AppColors.primary,
+                          activeThumbColor: AppColors.primary,
 
                           value: settings.isDarkMode,
 
@@ -110,7 +110,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         subtitle: 'Transaction & transfer updates',
 
                         trailing: Switch(
-                          activeColor: AppColors.primary,
+                          activeThumbColor: AppColors.primary,
 
                           value: settings.notificationsEnabled,
 
@@ -141,7 +141,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         subtitle: 'Use Face ID / Fingerprint',
 
                         trailing: Switch(
-                          activeColor: AppColors.primary,
+                          activeThumbColor: AppColors.primary,
 
                           value: settings.biometricsEnabled,
 
@@ -172,7 +172,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         subtitle: 'Help improve app experience',
 
                         trailing: Switch(
-                          activeColor: AppColors.primary,
+                          activeThumbColor: AppColors.primary,
 
                           value: settings.analyticsEnabled,
 
@@ -294,8 +294,8 @@ class _SettingsTile extends StatelessWidget {
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
-              AppColors.isDark(context) ? 0.18 : 0.04,
+            color: Colors.black.withValues(
+              alpha: AppColors.isDark(context) ? 0.18 : 0.04,
             ),
 
             blurRadius: 18,

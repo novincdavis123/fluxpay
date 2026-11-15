@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:fluxpay/app/theme/app_colors.dart';
@@ -108,14 +108,14 @@ STATUS => ${state.status}
                             end: Alignment.bottomRight,
 
                             colors: [
-                              AppColors.primary.withOpacity(0.18),
-                              AppColors.primary.withOpacity(0.06),
+                              AppColors.primary.withValues(alpha: 0.18),
+                              AppColors.primary.withValues(alpha: 0.06),
                             ],
                           ),
 
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primary.withOpacity(0.18),
+                              color: AppColors.primary.withValues(alpha: 0.18),
                               blurRadius: 40,
                               spreadRadius: 2,
                             ),

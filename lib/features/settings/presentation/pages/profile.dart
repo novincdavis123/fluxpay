@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluxpay/app/router/app_router.dart';
 
@@ -36,8 +36,8 @@ class ProfilePage extends StatelessWidget {
               border: Border.all(color: AppColors.getBorderColor(context)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(
-                    AppColors.isDark(context) ? 0.25 : 0.08,
+                  color: Colors.black.withValues(
+                    alpha: AppColors.isDark(context) ? 0.25 : 0.08,
                   ),
                   blurRadius: 28,
                   offset: const Offset(0, 12),
@@ -55,7 +55,7 @@ class ProfilePage extends StatelessWidget {
 
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.red.withOpacity(0.12),
+                    color: Colors.red.withValues(alpha: 0.12),
                   ),
 
                   child: const Icon(
@@ -324,8 +324,8 @@ class ProfilePage extends StatelessWidget {
 
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(
-                          AppColors.isDark(context) ? 0.22 : 0.06,
+                        color: Colors.black.withValues(
+                          alpha: AppColors.isDark(context) ? 0.22 : 0.06,
                         ),
                         blurRadius: 24,
                         offset: const Offset(0, 10),
@@ -347,7 +347,7 @@ class ProfilePage extends StatelessWidget {
                               gradient: LinearGradient(
                                 colors: [
                                   AppColors.primary,
-                                  AppColors.primary.withOpacity(0.7),
+                                  AppColors.primary.withValues(alpha: 0.7),
                                 ],
                               ),
                             ),
@@ -394,7 +394,7 @@ class ProfilePage extends StatelessWidget {
 
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(100),
-                                    color: AppColors.primary.withOpacity(0.12),
+                                    color: AppColors.primary.withValues(alpha: 0.12),
                                   ),
 
                                   child: Row(
@@ -520,7 +520,7 @@ class ProfilePage extends StatelessWidget {
                     onPressed: () => _logout(context),
 
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.withOpacity(0.12),
+                      backgroundColor: Colors.red.withValues(alpha: 0.12),
                       foregroundColor: Colors.redAccent,
                       elevation: 0,
 

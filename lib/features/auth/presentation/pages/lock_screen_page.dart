@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:fluxpay/app/theme/app_colors.dart';
@@ -114,18 +114,18 @@ class _LockScreenPageState extends State<LockScreenPage> {
                           end: Alignment.bottomRight,
 
                           colors: [
-                            AppColors.primary.withOpacity(0.20),
-                            AppColors.primary.withOpacity(0.05),
+                            AppColors.primary.withValues(alpha: 0.20),
+                            AppColors.primary.withValues(alpha: 0.05),
                           ],
                         ),
 
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.08),
+                          color: Colors.white.withValues(alpha: 0.08),
                         ),
 
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withOpacity(0.20),
+                            color: AppColors.primary.withValues(alpha: 0.20),
                             blurRadius: 36,
                             spreadRadius: 4,
                           ),
@@ -216,7 +216,7 @@ class _LockScreenPageState extends State<LockScreenPage> {
                     Row(
                       children: [
                         Expanded(
-                          child: Divider(color: Colors.white.withOpacity(0.10)),
+                          child: Divider(color: Colors.white.withValues(alpha: 0.10)),
                         ),
 
                         Padding(
@@ -231,7 +231,7 @@ class _LockScreenPageState extends State<LockScreenPage> {
                         ),
 
                         Expanded(
-                          child: Divider(color: Colors.white.withOpacity(0.10)),
+                          child: Divider(color: Colors.white.withValues(alpha: 0.10)),
                         ),
                       ],
                     ),
@@ -264,7 +264,7 @@ class _LockScreenPageState extends State<LockScreenPage> {
                           borderRadius: BorderRadius.circular(18),
 
                           borderSide: BorderSide(
-                            color: Colors.white.withOpacity(0.08),
+                            color: Colors.white.withValues(alpha: 0.08),
                           ),
                         ),
 
@@ -272,7 +272,7 @@ class _LockScreenPageState extends State<LockScreenPage> {
                           borderRadius: BorderRadius.circular(18),
 
                           borderSide: BorderSide(
-                            color: Colors.white.withOpacity(0.08),
+                            color: Colors.white.withValues(alpha: 0.08),
                           ),
                         ),
 
@@ -305,7 +305,7 @@ class _LockScreenPageState extends State<LockScreenPage> {
 
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(
-                                color: AppColors.primary.withOpacity(0.5),
+                                color: AppColors.primary.withValues(alpha: 0.5),
                               ),
 
                               shape: RoundedRectangleBorder(

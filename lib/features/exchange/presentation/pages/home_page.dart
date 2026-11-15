@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:fluxpay/app/theme/app_colors.dart';
@@ -69,7 +69,7 @@ class _HomePageState extends State<HomePage> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
 
-                color: AppColors.primary.withOpacity(isDark ? 0.14 : 0.08),
+                color: AppColors.primary.withValues(alpha: isDark ? 0.14 : 0.08),
               ),
             ),
           ),
@@ -161,7 +161,7 @@ class _HomePageState extends State<HomePage> {
 
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.32),
+                          color: AppColors.primary.withValues(alpha: 0.32),
                           blurRadius: 34,
                           offset: const Offset(0, 18),
                         ),
@@ -193,7 +193,7 @@ class _HomePageState extends State<HomePage> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(100),
 
-                                color: Colors.white.withOpacity(0.14),
+                                color: Colors.white.withValues(alpha: 0.14),
                               ),
 
                               child: Row(

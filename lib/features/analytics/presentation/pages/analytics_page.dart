@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -241,8 +241,8 @@ class _MiniAnalyticsCard extends StatelessWidget {
 
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.04)
-              : Colors.black.withOpacity(0.04),
+              ? Colors.white.withValues(alpha: 0.04)
+              : Colors.black.withValues(alpha: 0.04),
         ),
       ),
 
@@ -255,7 +255,7 @@ class _MiniAnalyticsCard extends StatelessWidget {
 
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              color: AppColors.primary.withOpacity(0.10),
+              color: AppColors.primary.withValues(alpha: 0.10),
             ),
 
             child: Icon(icon, color: AppColors.primary),
@@ -307,10 +307,10 @@ class _AnalyticsEmptyState extends StatelessWidget {
 
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: AppColors.primary.withOpacity(0.08),
+                      color: AppColors.primary.withValues(alpha: 0.08),
 
                       border: Border.all(
-                        color: AppColors.primary.withOpacity(0.12),
+                        color: AppColors.primary.withValues(alpha: 0.12),
                       ),
                     ),
 

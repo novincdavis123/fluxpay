@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fluxpay/app/theme/app_colors.dart';
 import 'package:fluxpay/app/theme/app_spacing.dart';
 import 'package:fluxpay/app/theme/app_text_styles.dart';
@@ -29,13 +29,13 @@ class SuccessRateCard extends StatelessWidget {
 
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.04)
-              : Colors.black.withOpacity(0.04),
+              ? Colors.white.withValues(alpha: 0.04)
+              : Colors.black.withValues(alpha: 0.04),
         ),
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.18 : 0.04),
+            color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.04),
             blurRadius: 16,
             offset: const Offset(0, 10),
           ),
@@ -95,7 +95,7 @@ class SuccessRateCard extends StatelessWidget {
                     value: successRate / 100,
                     strokeWidth: 10,
 
-                    backgroundColor: AppColors.primary.withOpacity(0.08),
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.08),
 
                     valueColor: const AlwaysStoppedAnimation<Color>(
                       AppColors.primary,
@@ -109,7 +109,7 @@ class SuccessRateCard extends StatelessWidget {
 
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.primary.withOpacity(0.12),
+                    color: AppColors.primary.withValues(alpha: 0.12),
                   ),
 
                   child: const Icon(

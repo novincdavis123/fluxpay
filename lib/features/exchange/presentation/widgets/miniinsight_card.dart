@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fluxpay/app/theme/app_colors.dart';
 import 'package:fluxpay/app/theme/app_text_styles.dart';
 
@@ -35,7 +35,7 @@ class MiniInsightCard extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
 
-              color: AppColors.primary.withOpacity(0.12),
+              color: AppColors.primary.withValues(alpha: 0.12),
             ),
 
             child: Icon(icon, color: AppColors.primary),

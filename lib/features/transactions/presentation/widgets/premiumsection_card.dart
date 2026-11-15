@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fluxpay/app/theme/app_colors.dart';
 import 'package:fluxpay/app/theme/app_text_styles.dart';
 
@@ -32,7 +32,7 @@ class PremiumSectionCard extends StatelessWidget {
 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.16 : 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.16 : 0.03),
 
             blurRadius: 20,
             offset: const Offset(0, 10),
@@ -51,7 +51,7 @@ class PremiumSectionCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(14),
 
-                  color: AppColors.primary.withOpacity(0.10),
+                  color: AppColors.primary.withValues(alpha: 0.10),
                 ),
 
                 child: Icon(icon, color: AppColors.primary),

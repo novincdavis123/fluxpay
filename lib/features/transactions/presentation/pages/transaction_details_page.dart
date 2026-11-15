@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fluxpay/features/transactions/presentation/widgets/glassicon_button.dart';
 import 'package:fluxpay/features/transactions/presentation/widgets/minimetric.dart';
 import 'package:fluxpay/features/transactions/presentation/widgets/premiuminfo_row.dart';
@@ -93,7 +93,7 @@ class TransactionDetailsPage extends StatelessWidget {
 
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(isDark ? 0.25 : 0.05),
+                          color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
 
                           blurRadius: 30,
                           offset: const Offset(0, 14),
@@ -113,7 +113,7 @@ class TransactionDetailsPage extends StatelessWidget {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(100),
 
-                            color: _statusColor().withOpacity(0.12),
+                            color: _statusColor().withValues(alpha: 0.12),
                           ),
 
                           child: Row(
@@ -157,8 +157,8 @@ class TransactionDetailsPage extends StatelessWidget {
 
                             gradient: LinearGradient(
                               colors: [
-                                _statusColor().withOpacity(0.28),
-                                _statusColor().withOpacity(0.08),
+                                _statusColor().withValues(alpha: 0.28),
+                                _statusColor().withValues(alpha: 0.08),
                               ],
                             ),
                           ),
@@ -201,7 +201,7 @@ class TransactionDetailsPage extends StatelessWidget {
 
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppColors.primary.withOpacity(0.12),
+                            color: AppColors.primary.withValues(alpha: 0.12),
                           ),
 
                           child: Icon(
@@ -221,7 +221,7 @@ class TransactionDetailsPage extends StatelessWidget {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(24),
 
-                            color: AppColors.primary.withOpacity(0.06),
+                            color: AppColors.primary.withValues(alpha: 0.06),
                           ),
 
                           child: Column(
@@ -304,7 +304,7 @@ class TransactionDetailsPage extends StatelessWidget {
                                     child: Minimetric(
                                       title: 'Fee',
                                       value:
-                                          '${transaction.fee.toStringAsFixed(2)}',
+                                          transaction.fee.toStringAsFixed(2),
                                       icon: Icons.payments_rounded,
                                     ),
                                   ),

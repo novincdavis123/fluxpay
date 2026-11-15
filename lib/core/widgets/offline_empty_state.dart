@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:fluxpay/app/theme/app_colors.dart';
 import 'package:fluxpay/app/theme/app_spacing.dart';
@@ -36,9 +36,9 @@ class OfflineEmptyState extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
 
-                color: Colors.red.withOpacity(0.08),
+                color: Colors.red.withValues(alpha: 0.08),
 
-                border: Border.all(color: Colors.red.withOpacity(0.15)),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.15)),
               ),
 
               child: const Icon(

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fluxpay/app/theme/app_colors.dart';
 
 class GlassIconButton extends StatelessWidget {
@@ -23,7 +23,7 @@ class GlassIconButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
 
-            color: AppColors.getCardColor(context).withOpacity(0.9),
+            color: AppColors.getCardColor(context).withValues(alpha: 0.9),
 
             border: Border.all(color: AppColors.getBorderColor(context)),
           ),

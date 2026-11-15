@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:fluxpay/app/theme/app_colors.dart';
 import 'package:fluxpay/app/theme/app_spacing.dart';
@@ -111,15 +111,15 @@ class _AnimatedEmptyStateState extends State<AnimatedEmptyState>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
 
-                      color: AppColors.borderDark.withOpacity(0.04),
+                      color: AppColors.borderDark.withValues(alpha: 0.04),
 
                       border: Border.all(
-                        color: AppColors.borderDark.withOpacity(0.05),
+                        color: AppColors.borderDark.withValues(alpha: 0.05),
                       ),
 
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.borderDark.withOpacity(0.08),
+                          color: AppColors.borderDark.withValues(alpha: 0.08),
 
                           blurRadius: 40,
                           spreadRadius: 2,

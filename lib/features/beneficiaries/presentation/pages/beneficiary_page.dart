@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:fluxpay/app/theme/app_colors.dart';
@@ -98,7 +98,7 @@ class _BeneficiaryPageState extends State<BeneficiaryPage> {
                     gradient: LinearGradient(
                       colors: [
                         AppColors.error,
-                        AppColors.error.withOpacity(isDark ? 0.8 : 0.9),
+                        AppColors.error.withValues(alpha: isDark ? 0.8 : 0.9),
                       ],
                     ),
                   ),
@@ -239,7 +239,7 @@ class _BeneficiaryPageState extends State<BeneficiaryPage> {
 
                           itemCount: state.beneficiaries.length,
 
-                          separatorBuilder: (_, __) {
+                          separatorBuilder: (_, _) {
                             return const SizedBox(height: AppSpacing.md);
                           },
 
@@ -264,7 +264,7 @@ class _BeneficiaryPageState extends State<BeneficiaryPage> {
                                   gradient: LinearGradient(
                                     colors: [
                                       AppColors.error,
-                                      AppColors.error.withOpacity(0.8),
+                                      AppColors.error.withValues(alpha: 0.8),
                                     ],
                                   ),
                                 ),
@@ -304,14 +304,14 @@ class _BeneficiaryPageState extends State<BeneficiaryPage> {
 
                                   border: Border.all(
                                     color: isDark
-                                        ? Colors.white.withOpacity(0.04)
-                                        : Colors.black.withOpacity(0.04),
+                                        ? Colors.white.withValues(alpha: 0.04)
+                                        : Colors.black.withValues(alpha: 0.04),
                                   ),
 
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(
-                                        isDark ? 0.18 : 0.04,
+                                      color: Colors.black.withValues(
+                                        alpha: isDark ? 0.18 : 0.04,
                                       ),
                                       blurRadius: 14,
                                       offset: const Offset(0, 8),

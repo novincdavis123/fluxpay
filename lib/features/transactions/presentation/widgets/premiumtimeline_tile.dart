@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fluxpay/app/theme/app_colors.dart';
 import 'package:fluxpay/app/theme/app_text_styles.dart';
 
@@ -43,7 +43,7 @@ class PremiumTimelineTile extends StatelessWidget {
                   boxShadow: completed
                       ? [
                           BoxShadow(
-                            color: AppColors.success.withOpacity(0.4),
+                            color: AppColors.success.withValues(alpha: 0.4),
                             blurRadius: 12,
                           ),
                         ]
