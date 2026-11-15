@@ -3,10 +3,10 @@ name: Build Flutter App
 on:
   push:
     branches:
-      - release  # Replace 'release' with your target branch name
+      - build
 
 permissions:
-  contents: write  # Required if publishing to GitHub Releases
+  contents: write
 
 jobs:
   build_android:
