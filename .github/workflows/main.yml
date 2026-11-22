@@ -1,28 +1,44 @@
+# Workflow name shown in the GitHub Actions tab
 name: Build Flutter App
 
+# Events that trigger this workflow
 on:
+  # 1. Build and publish a new APK whenever code is pushed to the 'releases' branch
   push:
     branches:
-      - build
+      - releases
+  # 2. Run a lightweight job every 5 days (must exist on the default branch main/master)
+  #    to keep GitHub's 7-day cache expiration timer from deleting cached SDKs
+  schedule:
+    - cron: '30 2 */5 * *' # Runs at 02:30 UTC (08:00 AM IST) every 5 days
 
+# Grant permission to create/update GitHub Releases and upload APK assets
 permissions:
   contents: write
 
+# Global environment variables available across all steps
+env:
+  APP_NAME: fluxpay
+
 jobs:
   build_android:
+    # Use Ubuntu 24.04 (comes with Android API 36 and common build tools pre-installed)
     runs-on: ubuntu-24.04
 
     steps:
+      # 1. Download your repository code onto the runner
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      # 2. Install Java 21 (required by Android Gradle Plugin 9+) and cache Gradle dependencies
       - name: Set up Java
         uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
           cache: 'gradle'
 
+      # 3. Install Flutter 3.50.0 and automatically cache both the Flutter SDK and ~/.pub-cache
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -30,24 +46,59 @@ jobs:
           channel: 'stable'
           cache: true
 
+      # 4. Change ownership of NDK & CMake folders from 'root' to 'runner'
+      #    so tar can restore cached files without "Operation not permitted" errors
+      - name: Grant ownership of NDK & CMake directories
+        run: |
+          sudo mkdir -p /usr/local/lib/android/sdk/{ndk,cmake}
+          sudo chown -R runner:runner /usr/local/lib/android/sdk/{ndk,cmake}
+
+      # 5. Cache Android NDK 28.2 and CMake 3.22.1 so they aren't re-downloaded on every build
+      #    Cache key automatically updates if either build.gradle.kts (or build.gradle) file changes
+      - name: Cache Android NDK & CMake
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/lib/android/sdk/ndk/28.2.*
+            /usr/local/lib/android/sdk/cmake/3.22.1
+          key: android-ndk-cmake-${{ runner.os }}-ndk28-${{ hashFiles('android/app/build.gradle*', 'android/build.gradle*') }}
+          restore-keys: |
+            android-ndk-cmake-${{ runner.os }}-ndk28-
+
+      # 6. Fetch Dart/Flutter packages from pubspec.yaml
       - name: Install dependencies
         run: flutter pub get
 
+      # 7. Compile the release APK (skipped during 5-day scheduled cache-warmer runs)
       - name: Build Android APK
-        run: flutter build apk --release
+        if: github.event_name == 'push'
+        run: flutter build apk --release --android-skip-build-dependency-validation
 
-      # Option A: Save build inside the GitHub Actions run summary (unzipped)
+      # 8. Copy and rename app-release.apk with the current IST date (e.g., fluxpay_Nov_22.apk)
+      - name: Rename APK with Month and Day
+        if: github.event_name == 'push'
+        id: rename_apk
+        run: |
+          DATE_STR=$(TZ='Asia/Kolkata' date +'%b_%d')
+          NEW_NAME="${APP_NAME}_${DATE_STR}.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk "build/app/outputs/flutter-apk/${NEW_NAME}"
+          echo "apk_name=${NEW_NAME}" >> $GITHUB_OUTPUT
+          echo "apk_path=build/app/outputs/flutter-apk/${NEW_NAME}" >> $GITHUB_OUTPUT
+
+      # 9. Attach the APK as a downloadable artifact inside the GitHub Actions run summary
       - name: Upload Build Artifact
+        if: github.event_name == 'push'
         uses: actions/upload-artifact@v7
         with:
-          name: app-release.apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: ${{ steps.rename_apk.outputs.apk_name }}
+          path: ${{ steps.rename_apk.outputs.apk_path }}
           archive: false
 
-      # Option B: Publish/overwrite the latest build on the Releases page
+      # 10. Publish or overwrite the APK under the 'latest-build' tag on the GitHub Releases page
       - name: Update Latest Release
+        if: github.event_name == 'push'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: latest-build
           name: Latest Build (${{ github.ref_name }})
-          files: build/app/outputs/flutter-apk/app-release.apk
+          files: ${{ steps.rename_apk.outputs.apk_path }}
